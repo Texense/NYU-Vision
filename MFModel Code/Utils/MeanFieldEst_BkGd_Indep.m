@@ -18,7 +18,7 @@ function [f_EnIOut,meanVs,loop] = MeanFieldEst_BkGd_Indep(C_EE,C_EI,C_IE,C_II,..
                                    tau_ampa_R,tau_ampa_D,tau_nmda_R,tau_nmda_D,tau_gaba_R,tau_gaba_D,tau_ref,... %7
                                    rhoE_ampa,rhoE_nmda,rhoI_ampa,rhoI_nmda,... %4
                                    gL_E,gL_I,Ve,Vi,... %4
-                                   N_HC,n_E_HC,n_I_HC,varargin) %3+x
+                                   N_HC,n_E_HC,n_I_HC,varargin) %3+x % if varagin non empty, we only export the last state
                                    %This line: we are taking spatial center 
 % First define fr and mV
 f_EnIOut = [];
@@ -38,7 +38,7 @@ N_EE = mean(sum(C_EE(E_Ind,:),2)); N_EI = mean(sum(C_EI(E_Ind,:),2));
 N_IE = mean(sum(C_IE(I_Ind,:),2)); N_II = mean(sum(C_II(I_Ind,:),2));
 % initialize with a reasonable guess     
 mVE = 0.57; mVI = 0.67; 
-%mVE =  0; mVI = 0; 
+%mVE =  1; mVI = 1; 
 meanVs = [mVE;mVI];
 mVEpre  = -1; mVIpre = -1;
 f_EnI0 = [0;0]; f_EnIpre = [-10;-10]; % start with an impossible value
