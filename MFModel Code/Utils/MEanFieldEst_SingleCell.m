@@ -1,7 +1,9 @@
 %% single cell simulation: to collect mean V (and firing rates)
+% NeuronType: 'e' or 'i'
+% ExpoType:   'Mean'or 'All'
 
-
-function [meanV,fr] = MEanFieldEst_SingleCell(NeuronType, f_EnI, ...
+function [V,fr] = MEanFieldEst_SingleCell(NeuronType, ExpoType, SimuTime, TimeGrid,...
+                                         f_EnI, ...
                                          N_EE,N_EI,N_IE,N_II,...
                                          S_EE,S_EI,S_IE,S_II,p_EEFail,...
                                          lambda_E,S_Elgn,rE_amb,S_amb,...
@@ -29,8 +31,8 @@ else
 end
 rE = f_EnI(1)/1000; rI = f_EnI(2)/1000; % f_EnI in s^-1, but here we use ms^-1
 %% Evolve single neurons
-T = 10000; % in ms
-dt = 0.1; t = 0:dt:T;
+T = SimuTime; % in ms
+dt = TimeGrid; t = 0:dt:T;
 SampleProp = 1/2; % last half time for meanV
 
 v = zeros(size(t)); 
@@ -41,10 +43,14 @@ spike = [];
 
 %rng(100)
 % input determination: Assume all Poisson
+%rng(100)
 p_lgn = 1-exp(-dt*lambda);            Sp_lgn = double(rand(size(t))<=p_lgn);
+%rng(101)
 p_amb = 1-exp(-dt*r_amb);             Sp_amb = double(rand(size(t))<=p_amb);
-p_EV1 = 1-exp(-dt*rE*N_E*(1-p_Fail)); Sp_EV1 = double(rand(size(t))<=p_EV1);
-p_IV1 = 1-exp(-dt*rI*N_I);            Sp_IV1 = double(rand(size(t))<=p_IV1);
+%rng(102)
+p_EV1 = dt*rE*full(N_E)*(1-p_Fail);   Sp_EV1 = double(rand(size(t))<=p_EV1); % preserving expectation correct
+%rng(103)
+p_IV1 = dt*rI*full(N_I);              Sp_IV1 = double(rand(size(t))<=p_IV1); % preserving expectation correct
 RefTimer = 0;
 for tInd = 1:length(t)-1
     % Firstly, refrectory neurons get out due to exponetial distributed time
@@ -77,6 +83,15 @@ for tInd = 1:length(t)-1
      G_nmda_R(tInd+1) = (G_nmda_R(tInd) + S_E * Sp_EV1(tInd) * rho_nmda) * exp(-dt/tau_nmda_R);
      G_nmda_D(tInd+1) = (G_nmda_D(tInd) + S_E * Sp_EV1(tInd) * rho_nmda) * exp(-dt/tau_nmda_D);
 end
-meanV = nanmean(v(floor(end*SampleProp):end));
-fr = length(find(spike>SampleProp*T))/(T*SampleProp/1000);
+
+if strcmpi(ExpoType,'mean')
+    V = nanmean(v(floor(end*SampleProp):end));
+    fr = length(find(spike>SampleProp*T))/(T*SampleProp/1000);
+elseif strcmpi(ExpoType,'all')
+    V = v;
+    fr = spike;    
+else 
+    error('***Unrecognized export data type')
+    return
+end
 end

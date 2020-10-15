@@ -44,7 +44,7 @@ mVEpre  = -1; mVIpre = -1;
 f_EnI0 = [0;0]; f_EnIpre = [-10;-10]; % start with an impossible value
 
 loop = 0;
-while( norm([mVEpre;mVIpre] - [mVE;mVI]) > 0.01 || norm(f_EnIpre - f_EnI0)>0.2)
+while( norm([mVEpre;mVIpre] - [mVE;mVI]) > 0.01 || norm(f_EnIpre - f_EnI0)>0.2) %%% relative difference for firing rates!!
 mVEpre = mVE; mVIpre = mVI;
 f_EnIpre = f_EnI0;
 f_EnI0 = MeanFieldEst_BkGd(N_EE,N_EI,N_IE,N_II,...
