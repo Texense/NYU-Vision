@@ -37,14 +37,15 @@ I_Ind = (reshape(I_Ind_X,size(I_Ind_X,1)*size(I_Ind_X,2),1)-1)*n_I_HC*N_HC + res
 N_EE = mean(sum(C_EE(E_Ind,:),2)); N_EI = mean(sum(C_EI(E_Ind,:),2)); 
 N_IE = mean(sum(C_IE(I_Ind,:),2)); N_II = mean(sum(C_II(I_Ind,:),2));
 % initialize with a reasonable guess     
-mVE = 0.57; mVI = 0.67; 
-%mVE =  1; mVI = 1; 
+%mVE = 0.57; mVI = 0.67; 
+mVE =  0.539; mVI = 0.683; 
 meanVs = [mVE;mVI];
 mVEpre  = -1; mVIpre = -1;
 f_EnI0 = [0;0]; f_EnIpre = [-10;-10]; % start with an impossible value
 
 loop = 0;
-while( norm([mVEpre;mVIpre] - [mVE;mVI]) > 0.01 || norm(f_EnIpre - f_EnI0)>0.2) %%% relative difference for firing rates!!
+%while( norm([mVEpre;mVIpre] - [mVE;mVI]) > 0.01 || norm(f_EnIpre - f_EnI0)>0.1) %%% relative difference for firing rates!!
+while loop<10
 mVEpre = mVE; mVIpre = mVI;
 f_EnIpre = f_EnI0;
 f_EnI0 = MeanFieldEst_BkGd(N_EE,N_EI,N_IE,N_II,...
@@ -161,7 +162,7 @@ else
 end
 rE = f_EnI(1)/1000; rI = f_EnI(2)/1000; % f_EnI in s^-1, but here we use ms^-1
 %% Evolve single neurons
-T = 10000; % in ms
+T = 20*1e3; % in ms
 dt = 0.1; t = 0:dt:T;
 SampleProp = 1/2; % last half time for meanV
 
