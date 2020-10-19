@@ -35,15 +35,16 @@ else
 end
 rE = f_EnI(1)/1000; rI = f_EnI(2)/1000; % f_EnI in s^-1, but here we use ms^-1
 %% Evolve single neurons
-T = 50*1e3; % in ms
+T = 30*1e3; % in ms
 dt = 0.1; t = 0:dt:T;
-SampleProp = 9/10; % last half time for meanV
+SampleProp = 9.7/10; % last half time for meanV
 
 v = zeros(length(t),NeuronNum); % time by rows and neuronInd by columns 
 G_gaba_D = zeros(length(t),NeuronNum); G_gaba_R = zeros(length(t),NeuronNum);
 G_ampa_D = zeros(length(t),NeuronNum); G_ampa_R = zeros(length(t),NeuronNum);
 G_nmda_D = zeros(length(t),NeuronNum); G_nmda_R = zeros(length(t),NeuronNum);
 spike = [];
+G_I = zeros(length(t),NeuronNum); G_E = zeros(length(t),NeuronNum);
 
 v(1,:) = InitialStates.v;
 G_gaba_D(1,:)  = InitialStates.G_gaba_D; G_gaba_R(1,:)  = InitialStates.G_gaba_R;
@@ -64,11 +65,11 @@ p_IV1 = dt*rI*full(N_I);              Sp_IV1 = double(rand(size(v))<=p_IV1); % p
 RefTimer = zeros(size(InitialStates.v));
 for tInd = 1:length(t)-1
      % Taking all previous states, compute new v as is (defer ref decisions later)
-     G_I = 1/(tau_gaba_D-tau_gaba_R) * (G_gaba_D(tInd,:) - G_gaba_R(tInd,:)); % S_EI is included in amplitude of GE_gaba
-     G_E = 1/(tau_ampa_D-tau_ampa_R) * (G_ampa_D(tInd,:) - G_ampa_R(tInd,:)) ...
+     G_I(tInd,:) = 1/(tau_gaba_D-tau_gaba_R) * (G_gaba_D(tInd,:) - G_gaba_R(tInd,:)); % S_EI is included in amplitude of GE_gaba
+     G_E(tInd,:) = 1/(tau_ampa_D-tau_ampa_R) * (G_ampa_D(tInd,:) - G_ampa_R(tInd,:)) ...
            + 1/(tau_nmda_D-tau_nmda_R) * (G_nmda_D(tInd,:) - G_nmda_R(tInd,:)); % 
-     vv = v(tInd,:) + dt*(-gL*v(tInd,:) - G_E.*(v(tInd,:)-Ve) - G_I.*(v(tInd,:)-Vi)); %Note: This ensures [nan v] gives [nan vv]
-     spike = [spike,tInd*dt*ones(1,sum(vv>=1))];
+     vv = v(tInd,:) + dt*(-gL*v(tInd,:) - G_E(tInd,:) .*(v(tInd,:)-Ve) - G_I(tInd,:).*(v(tInd,:)-Vi)); %Note: This ensures [nan v] gives [nan vv]
+     spike = [spike,tInd*dt*ones(1,sum(vv>=1,'all'))];
      vv(vv>=1) = nan; 
      
      %Now, refrectory neurons get out due to exponetial distributed time    
@@ -78,16 +79,16 @@ for tInd = 1:length(t)-1
      v(tInd+1,:) = vv;     
 
      % conductances
-     G_gaba_R(tInd+1,:) = (G_gaba_R(tInd,:) + S_I*Sp_IV1(tInd,:)) * exp(-dt/tau_gaba_R); 
-     G_gaba_D(tInd+1,:) = (G_gaba_D(tInd,:) + S_I*Sp_IV1(tInd,:)) * exp(-dt/tau_gaba_D); 
-     G_ampa_R(tInd+1,:) = (G_ampa_R(tInd,:) + S_lgn * Sp_lgn(tInd,:) + S_amb * Sp_amb(tInd,:) + S_E * Sp_EV1(tInd,:) * rho_ampa) * exp(-dt/tau_ampa_R);
-     G_ampa_D(tInd+1,:) = (G_ampa_D(tInd,:) + S_lgn * Sp_lgn(tInd,:) + S_amb * Sp_amb(tInd,:) + S_E * Sp_EV1(tInd,:) * rho_ampa) * exp(-dt/tau_ampa_D);
-     G_nmda_R(tInd+1,:) = (G_nmda_R(tInd,:) + S_E * Sp_EV1(tInd,:) * rho_nmda) * exp(-dt/tau_nmda_R);
-     G_nmda_D(tInd+1,:) = (G_nmda_D(tInd,:) + S_E * Sp_EV1(tInd,:) * rho_nmda) * exp(-dt/tau_nmda_D);
+     G_gaba_R(tInd+1,:) = (G_gaba_R(tInd,:)) * exp(-dt/tau_gaba_R) + S_I*Sp_IV1(tInd,:); 
+     G_gaba_D(tInd+1,:) = (G_gaba_D(tInd,:)) * exp(-dt/tau_gaba_D) + S_I*Sp_IV1(tInd,:); 
+     G_ampa_R(tInd+1,:) = (G_ampa_R(tInd,:)) * exp(-dt/tau_ampa_R) + S_lgn * Sp_lgn(tInd,:) + S_amb * Sp_amb(tInd,:) + S_E * Sp_EV1(tInd,:) * rho_ampa;
+     G_ampa_D(tInd+1,:) = (G_ampa_D(tInd,:)) * exp(-dt/tau_ampa_D) + S_lgn * Sp_lgn(tInd,:) + S_amb * Sp_amb(tInd,:) + S_E * Sp_EV1(tInd,:) * rho_ampa;
+     G_nmda_R(tInd+1,:) = (G_nmda_R(tInd,:)) * exp(-dt/tau_nmda_R) + S_E * Sp_EV1(tInd,:) * rho_nmda;
+     G_nmda_D(tInd+1,:) = (G_nmda_D(tInd,:)) * exp(-dt/tau_nmda_D) + S_E * Sp_EV1(tInd,:) * rho_nmda;
 end
 
 meanV = nanmean(v(floor(end*(1-SampleProp)):end,:),'all');
-fr = length(find(spike>(1-SampleProp)*T))/(T*SampleProp/1e3)/NeuronNum;
+fr = length(spike)/(T/1e3)/NeuronNum;
 EndStates = struct('v',v(end,:),'G_gaba_D',G_gaba_D(end,:),'G_gaba_R',G_gaba_R(end,:),...
                                 'G_ampa_D',G_ampa_D(end,:),'G_ampa_R',G_ampa_R(end,:),...
                                 'G_nmda_D',G_nmda_D(end,:),'G_nmda_R',G_nmda_R(end,:));
