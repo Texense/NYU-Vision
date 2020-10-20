@@ -35,9 +35,9 @@ else
 end
 rE = f_EnI(1)/1000; rI = f_EnI(2)/1000; % f_EnI in s^-1, but here we use ms^-1
 %% Evolve single neurons
-T = 30*1e3; % in ms
+T = 3*1e3; % in ms
 dt = 0.1; t = 0:dt:T;
-SampleProp = 9.7/10; % last half time for meanV
+SampleProp = 2/3; % last half time for meanV
 
 v = zeros(length(t),NeuronNum); % time by rows and neuronInd by columns 
 G_gaba_D = zeros(length(t),NeuronNum); G_gaba_R = zeros(length(t),NeuronNum);
