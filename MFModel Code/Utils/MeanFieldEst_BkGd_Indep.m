@@ -9,9 +9,15 @@
 %        gL_E,gL_I           Leaky time constants
 %        Ve,Vi               Reversak potentials
 %        mVE,mVI             Mean Vs, collected from simulation
+%        varargin            'Mean' or 'Traj', indicate the form of the
+%        output
 % Output:f_EnI               Estimation of firing rates, E and I; A sequences
 %        meanVs              mean V of E and I
-function [f_EnIOut,meanVs,loop] = MeanFieldEst_BkGd_Indep(C_EE,C_EI,C_IE,C_II,... %4
+%        loop                Number of loops
+%        SteadyIndicate      logical value for convergence
+
+% Ver 2.0: New convergence conditions!
+function [f_EnIOut,meanVs,loop,SteadyIndicate] = MeanFieldEst_BkGd_Indep(C_EE,C_EI,C_IE,C_II,... %4
                                    S_EE,S_EI,S_IE,S_II,p_EEFail,... %5
                                    lambda_E,S_Elgn,rE_amb,S_amb,... %4
                                    lambda_I,S_Ilgn,rI_amb,... %3
@@ -38,16 +44,16 @@ N_EE = mean(sum(C_EE(E_Ind,:),2)); N_EI = mean(sum(C_EI(E_Ind,:),2));
 N_IE = mean(sum(C_IE(I_Ind,:),2)); N_II = mean(sum(C_II(I_Ind,:),2));
 % initialize with a reasonable guess     
 %mVE = 0.57; mVI = 0.67; 
-mVE =  0.539; mVI = 0.683; 
+%mVE =  0.539; mVI = 0.683; 
+mVE =  0; mVI = 0; 
 meanVs = [mVE;mVI];
-mVEpre  = -1; mVIpre = -1;
-f_EnI0 = [0;0]; f_EnIpre = [-10;-10]; % start with an impossible value
 
 loop = 0;
+SteadyCounter = 0; % Indicate the number of loops after steady condition
+SteadyIndicate = false;
+TestPoints = floor(15); % How many consecutive points we test
 %while( norm([mVEpre;mVIpre] - [mVE;mVI]) > 0.01 || norm(f_EnIpre - f_EnI0)>0.1) %%% relative difference for firing rates!!
-while loop<10
-mVEpre = mVE; mVIpre = mVI;
-f_EnIpre = f_EnI0;
+while SteadyCounter<100 %the formal ending condition
 f_EnI0 = MeanFieldEst_BkGd(N_EE,N_EI,N_IE,N_II,...
                                    S_EE,S_EI,S_IE,S_II,p_EEFail,...
                                    lambda_E,S_Elgn,rE_amb,S_amb,...
@@ -77,10 +83,27 @@ loop = loop+1;
 
 f_EnIOut = [f_EnIOut,f_EnI0];
 meanVs = [meanVs, [mVE;mVI]];
+
+if ~SteadyIndicate
+  if loop >= TestPoints && max(std(f_EnIOut(:,end-TestPoints+1:end),0,2) ...
+                            ./mean(f_EnIOut(:,end-TestPoints+1:end),2))<0.05 % std/mean for the last 10 samples
+     SteadyIndicate = true;
+  end  
+else 
+    SteadyCounter = SteadyCounter+1;
 end
-if nargin > 34 % Specify: I don't need the trajectory but the final ones
-    f_EnIOut = f_EnIOut(:,end);
-    meanVs = meanVs(:,end);
+
+% break out if not reaching convergence after 100 iterations. Tbis number
+% should be larger than end condition of SteadyCounter
+if (~SteadyIndicate && loop >= 200) 
+    disp('Firing rates unconverged')
+    break
+end
+end
+
+if nargin > 34 && strcmpi(varargin(1),'Mean') % Specify: I don't need the trajectory but the final ones    
+    f_EnIOut = mean(f_EnIOut(:,end-50:end),2);
+    meanVs   = mean(meanVs(:,end-50:end),2);
 end
 end
 
@@ -177,7 +200,7 @@ spike = [];
 %rng(100)
 p_lgn = 1-exp(-dt*lambda);            Sp_lgn = double(rand(size(t))<=p_lgn);
 %rng(101)
-p_amb = 1-exp(-dt*r_amb);             Sp_amb = double(rand(size(t))<=p_amb);
+p_amb = dt*r_amb;                     Sp_amb = double(rand(size(t))<=p_amb);
 %rng(102)
 p_EV1 = dt*rE*full(N_E)*(1-p_Fail);   Sp_EV1 = double(rand(size(t))<=p_EV1); % preserving expectation correct
 %rng(103)
