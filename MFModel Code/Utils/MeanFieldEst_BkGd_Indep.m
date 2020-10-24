@@ -45,7 +45,7 @@ N_IE = mean(sum(C_IE(I_Ind,:),2)); N_II = mean(sum(C_II(I_Ind,:),2));
 % initialize with a reasonable guess     
 %mVE = 0.57; mVI = 0.67; 
 %mVE =  0.539; mVI = 0.683; 
-mVE =  0; mVI = 0; 
+mVE = 0.57; mVI = 0.67; 
 meanVs = [mVE;mVI];
 
 loop = 0;
