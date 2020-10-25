@@ -101,7 +101,7 @@ end
 
 % break out if not reaching convergence after 100 iterations. Tbis number
 % should be larger than end condition of SteadyCounter
-if (~SteadyIndicate && loop >= 200) 
+if (~SteadyIndicate && loop >= AveLoop+10) 
     disp('Firing rates unconverged')
     break
 end

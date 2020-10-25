@@ -28,7 +28,11 @@ function [f_EnIOut,meanVs,loop,SteadyIndicate] = MeanFieldEst_BkGd_Indep_RK2(C_E
                                    N_HC,n_E_HC,n_I_HC,varargin) %3+x % if varagin non empty, we only export the last state
                                    %This line: we are taking spatial center 
 % First define fr and mV
-
+if nargin > 35  % Specify: The number of loops I want, after stopping criteria met    
+    AveLoop = varargin{2};
+else 
+    AveLoop = 100;
+end
 
 % Get connectivity for the center HC
 E_sideInd = floor(1*n_E_HC+1):2*n_E_HC;
@@ -66,7 +70,7 @@ SteadyIndicate = false;
 TestPoints = floor(15); % How many consecutive points we test
 
 %while( norm([mVEpre;mVIpre] - [mVE;mVI]) > 0.01 || norm(f_EnIpre - f_EnI0)>0.1) %%% relative difference for firing rates!!
-while SteadyCounter<25 %the formal ending condition
+while SteadyCounter<AveLoop %the formal ending condition
 % using RK2 now
 f_In = f_EnIOut(:,end);
 [f1,~] = FrIter(f_In, ...
@@ -105,7 +109,7 @@ end
 
 % break out if not reaching convergence after 100 iterations. Tbis number
 % should be larger than end condition of SteadyCounter
-if (~SteadyIndicate && loop >= 200) 
+if (~SteadyIndicate && loop >= AveLoop) 
     disp('Firing rates unconverged')
     break
 end
