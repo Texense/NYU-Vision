@@ -9,8 +9,9 @@
 %        gL_E,gL_I           Leaky time constants
 %        Ve,Vi               Reversak potentials
 %        mVE,mVI             Mean Vs, collected from simulation
-%        varargin            'Mean' or 'Traj', indicate the form of the
-%        output
+%        varargin            >34: 'Mean' or 'Traj', indicate the form of the output
+%                            >35: Sample Number after stopping criteria
+%                            >36: Max Iteration before converged
 % Output:f_EnI               Estimation of firing rates, E and I; A sequences
 %        meanVs              mean V of E and I
 %        loop                Number of loops
@@ -29,9 +30,18 @@ function [f_EnIOut,meanVs,loop,SteadyIndicate] = MeanFieldEst_BkGd_Indep(C_EE,C_
 
 if nargin > 35  % Specify: The number of loops I want, after stopping criteria met    
     AveLoop = varargin{2};
+    
+    if nargin > 36 % Specify: Maximum nubmer of loops before stopping
+        StopLoop = varargin{3};
+    else 
+        StopLoop = AveLoop;
+    end
 else 
     AveLoop = 100;
+    StopLoop = AveLoop;
 end
+
+
 % First define fr and mV
 f_EnIOut = [];
 
@@ -67,7 +77,8 @@ f_EnI0 = MeanFieldEst_BkGd(N_EE,N_EI,N_IE,N_II,...
                                    gL_E,gL_I,Ve,Vi,mVE,mVI);
 
 f_EnI0 = max([f_EnI0,[0;0]],[],2);
-%f_EnI = zeros(size(f_EnI0)); % from simulation
+%f_EnI0 = abs(f_EnI0);
+
 % simulate one neuron                              
 [mVE,~] = MEanFieldEst_SingleCell('e', f_EnI0, ...
                                          N_EE,N_EI,N_IE,N_II,...
@@ -101,7 +112,7 @@ end
 
 % break out if not reaching convergence after 100 iterations. Tbis number
 % should be larger than end condition of SteadyCounter
-if (~SteadyIndicate && loop >= AveLoop+10) 
+if (~SteadyIndicate && loop >= StopLoop) 
     disp('Firing rates unconverged')
     break
 end
