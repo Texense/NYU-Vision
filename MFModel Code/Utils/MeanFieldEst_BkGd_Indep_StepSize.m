@@ -18,7 +18,7 @@
 %        SteadyIndicate      logical value for convergence
 
 % Ver 2.0: New convergence conditions!
-function [f_EnIOut,meanVs,loop,SteadyIndicate] = MeanFieldEst_BkGd_Indep(C_EE,C_EI,C_IE,C_II,... %4
+function [f_EnIOut,meanVs,loop,SteadyIndicate] = MeanFieldEst_BkGd_Indep_StepSize(C_EE,C_EI,C_IE,C_II,... %4
                                    S_EE,S_EI,S_IE,S_II,p_EEFail,... %5
                                    lambda_E,S_Elgn,rE_amb,S_amb,... %4
                                    lambda_I,S_Ilgn,rI_amb,... %3
