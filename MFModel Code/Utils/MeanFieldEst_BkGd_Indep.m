@@ -103,7 +103,7 @@ meanVs = [meanVs, [mVE;mVI]];
 
 if ~SteadyIndicate
   if loop >= TestPoints && max(std(f_EnIOut(:,end-TestPoints+1:end),0,2) ...
-                            ./mean(f_EnIOut(:,end-TestPoints+1:end),2))<0.05 % std/mean for the last 10 samples
+                            ./mean(f_EnIOut(:,end-TestPoints+1:end),2))<0.08 % std/mean for the last 10 samples
      SteadyIndicate = true;
   end  
 else 
