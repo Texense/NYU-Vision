@@ -13,12 +13,17 @@
 %                            >35: Sample Number after stopping criteria
 %                            >36: Max Iteration before converged
 %                            >37: Stepsize h
+%                            >38: LIF simulation time
 % Output:f_EnI               Estimation of firing rates, E and I; A sequences
 %        meanVs              mean V of E and I
 %        loop                Number of loops
 %        SteadyIndicate      logical value for convergence
 
 % Ver 2.0: New convergence conditions!
+% Ver 3.0: We can now define 1. form of the output
+%                            2. Sample number and max iteration number
+%                            3. test different stepsizes and LIF simulation
+%                            time
 function [f_EnIOut,meanVs,loop,SteadyIndicate] = MeanFieldEst_BkGd_Indep_StepSize(C_EE,C_EI,C_IE,C_II,... %4
                                    S_EE,S_EI,S_IE,S_II,p_EEFail,... %5
                                    lambda_E,S_Elgn,rE_amb,S_amb,... %4
@@ -47,7 +52,11 @@ else
     h_Step = 1;        
 end
 
-% First define fr and mV
+if nargin > 38 % Specify: LIF simulation time
+    LIFSimuT = varargin{5};
+else
+    LIFSimuT = 20*1e3;    % unit in ms    
+end
 
 
 % Get connectivity for the center HC
@@ -89,7 +98,7 @@ while SteadyCounter<AveLoop %the formal ending condition
                                          lambda_I,S_Ilgn,rI_amb,...
                                          tau_ampa_R,tau_ampa_D,tau_nmda_R,tau_nmda_D,tau_gaba_R,tau_gaba_D,tau_ref,...
                                          rhoE_ampa,rhoE_nmda,rhoI_ampa,rhoI_nmda,...
-                                         gL_E,gL_I,Ve,Vi);
+                                         gL_E,gL_I,Ve,Vi,LIFSimuT);
 [mVI,~] = MEanFieldEst_SingleCell('i', f_EnIIni, ...
                                          N_EE,N_EI,N_IE,N_II,...
                                          S_EE,S_EI,S_IE,S_II,p_EEFail,...
@@ -97,7 +106,7 @@ while SteadyCounter<AveLoop %the formal ending condition
                                          lambda_I,S_Ilgn,rI_amb,...
                                          tau_ampa_R,tau_ampa_D,tau_nmda_R,tau_nmda_D,tau_gaba_R,tau_gaba_D,tau_ref,...
                                          rhoE_ampa,rhoE_nmda,rhoI_ampa,rhoI_nmda,...
-                                         gL_E,gL_I,Ve,Vi);
+                                         gL_E,gL_I,Ve,Vi,LIFSimuT);
                                      
 f_EnI0 = MeanFieldEst_BkGd(N_EE,N_EI,N_IE,N_II,...
                                    S_EE,S_EI,S_IE,S_II,p_EEFail,...
@@ -195,7 +204,7 @@ function [meanV,fr] = MEanFieldEst_SingleCell(NeuronType, f_EnI, ...
                                          lambda_I,S_Ilgn,rI_amb,...
                                          tau_ampa_R,tau_ampa_D,tau_nmda_R,tau_nmda_D,tau_gaba_R,tau_gaba_D,tau_ref,...
                                          rhoE_ampa,rhoE_nmda,rhoI_ampa,rhoI_nmda,...
-                                         gL_E,gL_I,Ve,Vi)
+                                         gL_E,gL_I,Ve,Vi,LIFSimuT)
 %% attribute parameters for different types of neurons
 if strcmpi(NeuronType,'e')
     N_E = N_EE; N_I = N_EI;
@@ -216,7 +225,7 @@ else
 end
 rE = f_EnI(1)/1000; rI = f_EnI(2)/1000; % f_EnI in s^-1, but here we use ms^-1
 %% Evolve single neurons
-T = 20*1e3; % in ms
+T = LIFSimuT; % in ms. Default: 20*1e3 ms
 dt = 0.1; t = 0:dt:T;
 SampleProp = 1/2; % last half time for meanV
 

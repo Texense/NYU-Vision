@@ -70,7 +70,7 @@ rE_amb = 0.72; rI_amb = 0.36;
 GridNum1 = 25;
 GridNum2 = 30;
 S_EI_Mtp = [0.4, 3.7];
-S_IE_Mtp = [0.12,0.6];
+S_IE_Mtp = [0.12,0.6];1
 S_EItest = linspace(S_EI_Mtp(1),S_EI_Mtp(2),GridNum1)*S_EE;
 S_IEtest = linspace(S_IE_Mtp(1),S_IE_Mtp(2),GridNum2)*S_EE;
 
