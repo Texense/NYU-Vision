@@ -5,6 +5,7 @@ FigurePath = [CurrentFolder '/Figures'];
 addpath(CurrentFolder)
 addpath([CurrentFolder '/Utils'])
 
+
 N_HC = 3; 
 % Number of E and I neurons
 n_E_HC = 54; n_I_HC = 31; % per side of HC
@@ -48,9 +49,9 @@ C_II = ConnectionMat(N_I,NnI,Size_I,...
 %RefTimeI = zeros(N_I,1); VI = 1.5*rand(N_I,1)-0.5; SpI = sparse(N_I,1); GI_ampa_R = zeros(N_I,1); GI_nmda_R = zeros(N_I,1); GI_gaba_R = zeros(N_I,1); GI_ampa_D = zeros(N_I,1); GI_nmda_D = zeros(N_I,1); GI_gaba_D = zeros(N_I,1); 
 load('Initials.mat')
 %parameters
-S_EE = 0.033; S_EI = 0.061; S_IE = 0.0087; S_II = 0.048;
 %S_EE = 0.033; S_EI = 0.061; S_IE = 0.0087; S_II = 0.048;
-%S_EE = 0.029; S_EI = 0.055; S_IE = 0.0081; S_II = 0.048; %Tuned
+%S_EE = 0.033; S_EI = 0.061; S_IE = 0.0087; S_II = 0.048;
+S_EE = 0.029; S_EI = 0.055; S_IE = 0.0081; S_II = 0.048; %Tuned
 %S_EE = 0.028; S_EI = 0.056; S_IE = 0.0095; S_II = 0.042; % original
 p_EEFail = 0.2; S_amb = 0.01;
 
@@ -67,17 +68,21 @@ lambda_I = 0.08;
 rE_amb = 0.72; rI_amb = 0.36;
 
 % Replace S_EI by testing values
-GridNum1 = 25;
-GridNum2 = 30;
+GridNum1 = 60;
+GridNum2 = 40;
 S_EI_Mtp = [0.4, 3.7];
-S_IE_Mtp = [0.12,0.6];1
+S_IE_Mtp = [0.12,0.6];
 S_EItest = linspace(S_EI_Mtp(1),S_EI_Mtp(2),GridNum1)*S_EE;
 S_IEtest = linspace(S_IE_Mtp(1),S_IE_Mtp(2),GridNum2)*S_EE;
 
+% Add lines boundaries
+LineL1 = polyfit([0.1212 0.4091],[2.1212 0.3939],1); % S_IE first, S_EI. second Those numbers are multipliers
+LineL2 = polyfit([0.1212 0.6061],[1.3636 0.5152],1);
+LineU1 = polyfit([0.1212 0.6061],[3.6970 1.5152],1);
 %% MF estimation: 
 cluster = parpool([4 64]);
 
-SBound = 3.2; % multipliers of S_EE
+%SBound = 3.3; % multipliers of S_EE
 
 Fr_NoFix = zeros(2,length(S_EItest),length(S_IEtest));
 mV_NoFix = zeros(2,length(S_EItest),length(S_IEtest));
@@ -87,19 +92,24 @@ Fr_NoFixTraj = cell(length(S_EItest),length(S_IEtest));
 mV_NoFixTraj = cell(length(S_EItest),length(S_IEtest));
 
 loopCount = zeros(length(S_EItest),length(S_IEtest)); % count the number of loops
-ConvIndi = logical(loopCount);
+ConvIndi = logical(loopCount); % converged or not
 
 SampleNum = 200;
 StopNum = 300;
 aa = floor(length(S_IEtest)); % Matlab always fail to directly see this as a whole number!!!
 tic
-for S_EIInd = 1:length(S_EItest)
+parfor S_EIInd = 1:length(S_EItest)
     S_EI = S_EItest(S_EIInd);
-    parfor S_IEInd = 1:aa
+    for S_IEInd = 1:aa
     S_IE = S_IEtest(S_IEInd);
     
-    if S_IE*10+S_EI<(SBound+0.01)*S_EE
-        disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; break...'])
+    if (S_EI<=S_IE*LineL1(1)+S_EE*LineL1(2) || S_EI<=S_IE*LineL2(1)+S_EE*LineL2(2) )
+        disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too high, break...'])
+        continue
+    end
+    
+    if (S_EI>=S_IE*LineU1(1)+S_EE*LineU1(2) )
+        disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too low, break...'])
         continue
     end
     
@@ -113,22 +123,31 @@ for S_EIInd = 1:length(S_EItest)
                                             tau_ampa_R,tau_ampa_D,tau_nmda_R,tau_nmda_D,tau_gaba_R,tau_gaba_D,tau_ref,...
                                             rhoE_ampa,rhoE_nmda,rhoI_ampa,rhoI_nmda,...
                                             gL_E,gL_I,Ve,Vi,...
-                                            N_HC,n_E_HC,n_I_HC,'End',SampleNum,StopNum);
+                                            N_HC,n_E_HC,n_I_HC,...
+                                            'End',SampleNum,StopNum,0.1,40*1e3); %Specifies
                                         
     toc    
     end
 end
-toc_Mtp 
+toc 
 
 for S_EIInd = 1:length(S_EItest)
     S_EI = S_EItest(S_EIInd);
     for S_IEInd = 1:length(S_IEtest)
         S_IE = S_IEtest(S_IEInd);
-    if S_IE*10+S_EI<(SBound+0.01)*S_EE
-        disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; break...'])
+%     if S_IE*10+S_EI<(SBound+0.01)*S_EE
+%         disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; break...'])
+%         continue
+%     end
+    if (S_EI<=S_IE*LineL1(1)+S_EE*LineL1(2) || S_EI<=S_IE*LineL2(1)+S_EE*LineL2(2) )
+        disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too high, break...'])
         continue
     end
-        
+    
+    if (S_EI>=S_IE*LineU1(1)+S_EE*LineU1(2) )
+        disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too low, break...'])
+        continue
+    end    
     Fr_NoFix(:,S_EIInd,S_IEInd) = mean(Fr_NoFixTraj{S_EIInd,S_IEInd}(:,end-SampleNum:end),2);
     mV_NoFix(:,S_EIInd,S_IEInd) = mean(mV_NoFixTraj{S_EIInd,S_IEInd}(:,end-SampleNum:end),2);
     Fr_NoFixVar(:,S_EIInd,S_IEInd) = var(Fr_NoFixTraj{S_EIInd,S_IEInd}(:,end-SampleNum:end),0,2);
@@ -136,12 +155,19 @@ for S_EIInd = 1:length(S_EItest)
     end
 end
 
+% save data
+ContourData = struct('Fr_NoFix', Fr_NoFix, 'mV_NoFix', mV_NoFix, ...
+                     'Fr_NoFixVar', Fr_NoFixVar, 'mV_NoFixVar',mV_NoFixVar,...
+                     'Fr_NoFixTraj', Fr_NoFixTraj, 'mV_NoFixTraj',mV_NoFixTraj,...
+                     'loopCount',loopCount,'ConvIndi',ConvIndi,...
+                     'S_EItest',S_EItest, 'S_IEtest',S_IEtest);
+save(['ContourData_S_EE=' num2str(S_EE) '.mat'],'ContourData')
 %% Contour maps
 Fr_Plot = Fr_NoFix;
 S_IEBound = 8e-3;
-DeleteInd = false(size(Fr_Plot));
-DeleteInd(:,:,S_IEtest<S_IEBound) = true;
-Fr_Plot(Fr_NoFix <=eps & DeleteInd) = nan;
+% DeleteInd = false(size(Fr_Plot));
+% DeleteInd(:,:,S_IEtest<S_IEBound) = true;
+Fr_Plot(Fr_NoFix <=eps) = nan;
 
 h(1) = figure('Name','Rough Countour S_EI S_IE');
 subplot 121
@@ -152,7 +178,7 @@ colorbar
 caxis([0 15])
 axis square
 hold on
-[C1,h1]= contour(S_IEtest,S_EItest,squeeze(Fr_Plot(1,:,:)),1:1:10,'ShowText','on','color','r');
+[C1,h1]= contour(S_IEtest,S_EItest,squeeze(Fr_Plot(1,:,:)),[2 5],'ShowText','on','color','r');
 clabel(C1,h1,'FontSize',10,'Color','k')
 axis square
 hold off
@@ -166,7 +192,7 @@ colorbar
 caxis([0 45])
 axis square
 hold on
-[C2,h2]= contour(S_IEtest,S_EItest,squeeze(Fr_Plot(2,:,:)),3:3:30,'ShowText','on','color','r');
+[C2,h2]= contour(S_IEtest,S_EItest,squeeze(Fr_Plot(2,:,:)),[7 15],'ShowText','on','color','b');
 clabel(C2,h2,'FontSize',10,'Color','k')
 axis square
 hold off
@@ -177,25 +203,25 @@ imagesc(S_IEtest,S_EItest,ConvIndi)
 xlabel('S_{IE}'); ylabel('S_{EI}');
 set(gca,'YDir','Normal')
 
-h(3) = figure('Name','Trajectories-Last');
-subplot 131
-plot_dir(Fr_NoFixTraj{9,13}(1,end-100:end)',Fr_NoFixTraj{9,13}(2,end-100:end)');
-xlabel('fE');ylabel('fI')
+% h(3) = figure('Name','Trajectories-Last');
+% subplot 131
+% plot_dir(Fr_NoFixTraj{9,13}(1,end-100:end)',Fr_NoFixTraj{9,13}(2,end-100:end)');
+% xlabel('fE');ylabel('fI')
+% 
+% title('last 100 iterations')
+% 
+% subplot 132
+% plot_dir(Fr_NoFixTraj{9,13}(1,end-50:end)',Fr_NoFixTraj{9,13}(2,end-50:end)');
+% xlabel('fE');ylabel('fI')
+% 
+% title('last 50 iterations')
+% 
+% subplot 133
+% plot_dir(Fr_NoFixTraj{9,13}(1,end-15:end)',Fr_NoFixTraj{9,13}(2,end-15:end)');
+% xlabel('fE');ylabel('fI')
+% 
+% title('last 15 iterations')
 
-title('last 100 iterations')
 
-subplot 132
-plot_dir(Fr_NoFixTraj{9,13}(1,end-50:end)',Fr_NoFixTraj{9,13}(2,end-50:end)');
-xlabel('fE');ylabel('fI')
-
-title('last 50 iterations')
-
-subplot 133
-plot_dir(Fr_NoFixTraj{9,13}(1,end-15:end)',Fr_NoFixTraj{9,13}(2,end-15:end)');
-xlabel('fE');ylabel('fI')
-
-title('last 15 iterations')
-
-
-saveas(h,fullfile(FigurePath, 'ContourFigs'),'fig')
+saveas(h,fullfile(FigurePath, ['ContourFigs - S_EE=' num2str(S_EE)]),'fig')
 close(h)
