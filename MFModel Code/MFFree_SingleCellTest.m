@@ -1,8 +1,11 @@
 %% Simulate Single-Cell for A Long Time: For Statistics
 %first, setup connctivity map
 
-addpath('C:\Users\tiexu\OneDrive\文档\Researches\NYU-Vision\MFModel Code')
-addpath('C:\Users\tiexu\OneDrive\文档\Researches\NYU-Vision\MFModel Code\Utils')
+CurrentFolder = pwd
+FigurePath = [CurrentFolder '/Figures'];
+addpath(CurrentFolder)
+addpath([CurrentFolder '/Utils'])
+addpath([CurrentFolder '/Data'])
 
 N_HC = 3; 
 % Number of E and I neurons

@@ -1,8 +1,10 @@
 %% A Estimation curve VS different S_EI
+CurrentFolder = pwd
+FigurePath = [CurrentFolder '/Figures'];
+addpath(CurrentFolder)
+addpath([CurrentFolder '/Utils'])
+addpath([CurrentFolder '/Data'])
 %% first, setup connctivity map
-addpath('C:\Users\tiexu\OneDrive\文档\Researches\NYU-Vision\MFModel Code')
-addpath('C:\Users\tiexu\OneDrive\文档\Researches\NYU-Vision\MFModel Code\Utils')
-
 N_HC = 3; 
 % Number of E and I neurons
 n_E_HC = 54; n_I_HC = 31; % per side of HC

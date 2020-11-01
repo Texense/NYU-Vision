@@ -4,7 +4,7 @@ CurrentFolder = pwd
 FigurePath = [CurrentFolder '/Figures'];
 addpath(CurrentFolder)
 addpath([CurrentFolder '/Utils'])
-
+addpath([CurrentFolder '/Data'])
 
 N_HC = 3; 
 % Number of E and I neurons
