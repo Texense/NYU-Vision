@@ -96,6 +96,8 @@ ConvIndi = logical(loopCount); % converged or not
 
 SampleNum = 200;
 StopNum = 300;
+hstep = 0.1;
+SimuT = 5*1e3;
 aa = floor(length(S_IEtest)); % Matlab always fail to directly see this as a whole number!!!
 tic
 parfor S_EIInd = 1:length(S_EItest)
@@ -124,7 +126,7 @@ parfor S_EIInd = 1:length(S_EItest)
                                             rhoE_ampa,rhoE_nmda,rhoI_ampa,rhoI_nmda,...
                                             gL_E,gL_I,Ve,Vi,...
                                             N_HC,n_E_HC,n_I_HC,...
-                                            'End',SampleNum,StopNum,0.1,40*1e3); %Specifies
+                                            'End',SampleNum,StopNum,hstep,SimuT); %Specifies
                                         
     toc    
     end
@@ -156,12 +158,15 @@ for S_EIInd = 1:length(S_EItest)
 end
 
 % save data
+Trajs = struct('Fr_NoFixTraj', Fr_NoFixTraj, 'mV_NoFixTraj',mV_NoFixTraj);
 ContourData = struct('Fr_NoFix', Fr_NoFix, 'mV_NoFix', mV_NoFix, ...
                      'Fr_NoFixVar', Fr_NoFixVar, 'mV_NoFixVar',mV_NoFixVar,...
-                     'Fr_NoFixTraj', Fr_NoFixTraj, 'mV_NoFixTraj',mV_NoFixTraj,...
+                     'Trajs', Trajs,...
                      'loopCount',loopCount,'ConvIndi',ConvIndi,...
                      'S_EItest',S_EItest, 'S_IEtest',S_IEtest);
-save(['ContourData_S_EE=' num2str(S_EE) '.mat'],'ContourData')
+% add important info to the end of filename
+CommentString = ['-' num2str(floor(SimuT/1e3)) 's'];
+save(['ContourData_S_EE=' num2str(S_EE) CommentString '.mat'],'ContourData')
 %% Contour maps
 Fr_Plot = Fr_NoFix;
 S_IEBound = 8e-3;
@@ -223,5 +228,5 @@ set(gca,'YDir','Normal')
 % title('last 15 iterations')
 
 
-saveas(h,fullfile(FigurePath, ['ContourFigs - S_EE=' num2str(S_EE)]),'fig')
+saveas(h,fullfile(FigurePath, ['ContourFigs - S_EE=' num2str(S_EE) CommentString]),'fig')
 close(h)
