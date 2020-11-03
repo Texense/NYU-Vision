@@ -44,7 +44,68 @@ C_II = ConnectionMat(N_I,NnI,Size_I,...
                      N_I,NnI,Size_I,...
                      Peak_I,SD_I,Dist_LB,1);
 
-%% Variables and Parameters
+%% Variables and Parameters% Fr_Plot = Fr_NoFix;
+% S_IEBound = 8e-3;
+% % DeleteInd = false(size(Fr_Plot));
+% % DeleteInd(:,:,S_IEtest<S_IEBound) = true;
+% Fr_Plot(Fr_NoFix <=eps) = nan;
+% 
+% h(1) = figure('Name','Rough Countour S_EI S_IE');
+% subplot 121
+% imagesc(S_IEtest,S_EItest,squeeze(Fr_Plot(1,:,:)))
+% xlabel('S_{IE}'); ylabel('S_{EI}');
+% set(gca,'YDir','Normal')
+% colorbar
+% caxis([0 15])
+% axis square
+% hold on
+% [C1,h1]= contour(S_IEtest,S_EItest,squeeze(Fr_Plot(1,:,:)),[2 5],'ShowText','on','color','r');
+% clabel(C1,h1,'FontSize',10,'Color','k')
+% axis square
+% hold off
+% %axis([min(S_EItest) max(S_EItest) min(S_IEtest) max(S_IEtest)])
+% 
+% subplot 122
+% imagesc(S_IEtest,S_EItest,squeeze(Fr_Plot(2,:,:)))
+% xlabel('S_{IE}'); ylabel('S_{EI}');
+% set(gca,'YDir','Normal')
+% colorbar
+% caxis([0 45])
+% axis square
+% hold on
+% [C2,h2]= contour(S_IEtest,S_EItest,squeeze(Fr_Plot(2,:,:)),[7 15],'ShowText','on','color','b');
+% clabel(C2,h2,'FontSize',10,'Color','k')
+% axis square
+% hold off
+% %axis([min(S_EItest) max(S_EItest) min(S_IEtest) max(S_IEtest)])
+% 
+% h(2) = figure('Name','Convergence');
+% imagesc(S_IEtest,S_EItest,ConvIndi)
+% xlabel('S_{IE}'); ylabel('S_{EI}');
+% set(gca,'YDir','Normal')
+% 
+% % h(3) = figure('Name','Trajectories-Last');
+% % subplot 131
+% % plot_dir(Fr_NoFixTraj{9,13}(1,end-100:end)',Fr_NoFixTraj{9,13}(2,end-100:end)');
+% % xlabel('fE');ylabel('fI')
+% % 
+% % title('last 100 iterations')
+% % 
+% % subplot 132
+% % plot_dir(Fr_NoFixTraj{9,13}(1,end-50:end)',Fr_NoFixTraj{9,13}(2,end-50:end)');
+% % xlabel('fE');ylabel('fI')
+% % 
+% % title('last 50 iterations')
+% % 
+% % subplot 133
+% % plot_dir(Fr_NoFixTraj{9,13}(1,end-15:end)',Fr_NoFixTraj{9,13}(2,end-15:end)');
+% % xlabel('fE');ylabel('fI')
+% % 
+% % title('last 15 iterations')
+% 
+% 
+% saveas(h,fullfile(FigurePath, ['ContourFigs - S_EE=' num2str(S_EE) CommentString]),'fig')
+% close(h)
 %RefTimeE = zeros(N_E,1); VE = 0.5*rand(N_E,1)-0.5; SpE = sparse(N_E,1); GE_ampa_R = zeros(N_E,1); GE_nmda_R = zeros(N_E,1); GE_gaba_R = zeros(N_E,1); GE_ampa_D = zeros(N_E,1); GE_nmda_D = zeros(N_E,1); GE_gaba_D = zeros(N_E,1);
 %RefTimeI = zeros(N_I,1); VI = 1.5*rand(N_I,1)-0.5; SpI = sparse(N_I,1); GI_ampa_R = zeros(N_I,1); GI_nmda_R = zeros(N_I,1); GI_gaba_R = zeros(N_I,1); GI_ampa_D = zeros(N_I,1); GI_nmda_D = zeros(N_I,1); GI_gaba_D = zeros(N_I,1); 
 load('Initials.mat')
@@ -68,18 +129,19 @@ lambda_I = 0.08;
 rE_amb = 0.72; rI_amb = 0.36;
 
 % Replace S_EI by testing values
-GridNum1 = 60;
-GridNum2 = 40;
+GridNum1 = 32;
+GridNum2 = 25;
+GridNum3 = 20;
 S_EI_Mtp = [0.4, 3.7]; % of S_EE
 S_IE_Mtp = [0.12,0.6]; % of S_EE
-S_II_Mtp = 
+S_II_Mtp = [0.2 2];
 S_EItest = linspace(S_EI_Mtp(1),S_EI_Mtp(2),GridNum1)*S_EE;
 S_IEtest = linspace(S_IE_Mtp(1),S_IE_Mtp(2),GridNum2)*S_EE;
-
+S_IItest = linspace(S_II_Mtp(1),S_II_Mtp(2),GridNum3)*S_EI;
 % Add lines boundaries
-LineL1 = polyfit([0.1212 0.4091],[2.1212 0.3939],1); % S_IE first, S_EI. second Those numbers are multipliers
-LineL2 = polyfit([0.1212 0.6061],[1.3636 0.5152],1);
-LineU1 = polyfit([0.1212 0.6061],[3.6970 1.5152],1);
+% LineL1 = polyfit([0.1212 0.4091],[2.1212 0.3939],1); % S_IE first, S_EI. second Those numbers are multipliers
+% LineL2 = polyfit([0.1212 0.6061],[1.3636 0.5152],1);
+% LineU1 = polyfit([0.1212 0.6061],[3.6970 1.5152],1);
 %% MF estimation: 
 cluster = gcp('nocreate');
 if isempty(cluster)
@@ -88,42 +150,44 @@ if isempty(cluster)
 end
 
 %SBound = 3.3; % multipliers of S_EE
+Fr_NoFix = zeros(2,length(S_EItest),length(S_IEtest),length(S_IItest));
+mV_NoFix = zeros(2,length(S_EItest),length(S_IEtest),length(S_IItest));
+Fr_NoFixVar = zeros(2,length(S_EItest),length(S_IEtest),length(S_IItest));
+mV_NoFixVar = zeros(2,length(S_EItest),length(S_IEtest),length(S_IItest));
+Fr_NoFixTraj = cell(length(S_EItest),length(S_IEtest),length(S_IItest));
+mV_NoFixTraj = cell(length(S_EItest),length(S_IEtest),length(S_IItest));
 
-Fr_NoFix = zeros(2,length(S_EItest),length(S_IEtest));
-mV_NoFix = zeros(2,length(S_EItest),length(S_IEtest));
-Fr_NoFixVar = zeros(2,length(S_EItest),length(S_IEtest));
-mV_NoFixVar = zeros(2,length(S_EItest),length(S_IEtest));
-Fr_NoFixTraj = cell(length(S_EItest),length(S_IEtest));
-mV_NoFixTraj = cell(length(S_EItest),length(S_IEtest));
-
-loopCount = zeros(length(S_EItest),length(S_IEtest)); % count the number of loops
+loopCount = zeros(length(S_EItest),length(S_IEtest),length(S_IItest)); % count the number of loops
 ConvIndi = logical(loopCount); % converged or not
 
-SampleNum = 200;
-StopNum = 300;
-hstep = 0.1;
-SimuT = 40*1e3;
+SampleNum = 60;
+StopNum = 200;
+hstep = 0.25;
+SimuT = 20*1e3;
 aa = floor(length(S_IEtest)); % Matlab always fail to directly see this as a whole number!!!
 tic
+
+for S_IIInd = 1:length(S_IItest)
+    S_II = S_IItest(S_IIInd);
 parfor S_EIInd = 1:length(S_EItest)
     S_EI = S_EItest(S_EIInd);
     for S_IEInd = 1:aa
     S_IE = S_IEtest(S_IEInd);
     
-    if (S_EI<=S_IE*LineL1(1)+S_EE*LineL1(2) || S_EI<=S_IE*LineL2(1)+S_EE*LineL2(2) )
-        disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too high, break...'])
-        continue
-    end
-    
-    if (S_EI>=S_IE*LineU1(1)+S_EE*LineU1(2) )
-        disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too low, break...'])
-        continue
-    end
+%     if (S_EI<=S_IE*LineL1(1)+S_EE*LineL1(2) || S_EI<=S_IE*LineL2(1)+S_EE*LineL2(2) )
+%         disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too high, break...'])
+%         continue
+%     end
+%     
+%     if (S_EI>=S_IE*LineU1(1)+S_EE*LineU1(2) )
+%         disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too low, break...'])
+%         continue
+%     end
     
     tic
-    [Fr_NoFixTraj{S_EIInd,S_IEInd},mV_NoFixTraj{S_EIInd,S_IEInd},...
-     loopCount(S_EIInd,S_IEInd),   ConvIndi(S_EIInd,S_IEInd)    ]...
-                  = MeanFieldEst_BkGd_Indep(C_EE,C_EI,C_IE,C_II,...
+    [Fr_NoFixTraj{S_EIInd,S_IEInd,S_IIInd},mV_NoFixTraj{S_EIInd,S_IEInd,S_IIInd},...
+     loopCount(S_EIInd,S_IEInd,S_IIInd),   ConvIndi(S_EIInd,S_IEInd,S_IIInd)    ]...
+                  = MeanFieldEst_BkGd_Indep_StepSize_TestmV(C_EE,C_EI,C_IE,C_II,...
                                             S_EE,S_EI,S_IE,S_II,p_EEFail,...
                                             lambda_E,S_Elgn,rE_amb,S_amb,...
                                             lambda_I,S_Ilgn,rI_amb,...
@@ -136,8 +200,11 @@ parfor S_EIInd = 1:length(S_EItest)
     toc    
     end
 end
+end
 toc 
 
+for S_IIInd = 1:length(S_IItest)
+    S_II = S_IItest(S_IIInd);
 for S_EIInd = 1:length(S_EItest)
     S_EI = S_EItest(S_EIInd);
     for S_IEInd = 1:length(S_IEtest)
@@ -146,92 +213,92 @@ for S_EIInd = 1:length(S_EItest)
 %         disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; break...'])
 %         continue
 %     end
-    if (S_EI<=S_IE*LineL1(1)+S_EE*LineL1(2) || S_EI<=S_IE*LineL2(1)+S_EE*LineL2(2) )
-        disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too high, break...'])
-        continue
-    end
-    
-    if (S_EI>=S_IE*LineU1(1)+S_EE*LineU1(2) )
-        disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too low, break...'])
-        continue
-    end    
-    Fr_NoFix(:,S_EIInd,S_IEInd) = mean(Fr_NoFixTraj{S_EIInd,S_IEInd}(:,end-SampleNum:end),2);
-    mV_NoFix(:,S_EIInd,S_IEInd) = mean(mV_NoFixTraj{S_EIInd,S_IEInd}(:,end-SampleNum:end),2);
-    Fr_NoFixVar(:,S_EIInd,S_IEInd) = var(Fr_NoFixTraj{S_EIInd,S_IEInd}(:,end-SampleNum:end),0,2);
-    mV_NoFixVar(:,S_EIInd,S_IEInd) = var(mV_NoFixTraj{S_EIInd,S_IEInd}(:,end-SampleNum:end),0,2);
+%     if (S_EI<=S_IE*LineL1(1)+S_EE*LineL1(2) || S_EI<=S_IE*LineL2(1)+S_EE*LineL2(2) )
+%         disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too high, break...'])
+%         continue
+%     end
+%     
+%     if (S_EI>=S_IE*LineU1(1)+S_EE*LineU1(2) )
+%         disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too low, break...'])
+%         continue
+%     end    
+    Fr_NoFix(:,S_EIInd,S_IEInd,S_IIInd) = mean(Fr_NoFixTraj{S_EIInd,S_IEInd,S_IIInd}(:,end-SampleNum:end),2);
+    mV_NoFix(:,S_EIInd,S_IEInd,S_IIInd) = mean(mV_NoFixTraj{S_EIInd,S_IEInd,S_IIInd}(:,end-SampleNum:end),2);
+    Fr_NoFixVar(:,S_EIInd,S_IEInd,S_IIInd) = var(Fr_NoFixTraj{S_EIInd,S_IEInd,S_IIInd}(:,end-SampleNum:end),0,2);
+    mV_NoFixVar(:,S_EIInd,S_IEInd,S_IIInd) = var(mV_NoFixTraj{S_EIInd,S_IEInd,S_IIInd}(:,end-SampleNum:end),0,2);
     end
 end
-
+end
 % save data
 Trajs = struct('Fr_NoFixTraj', Fr_NoFixTraj, 'mV_NoFixTraj',mV_NoFixTraj);
-ContourData = struct('Fr_NoFix', Fr_NoFix, 'mV_NoFix', mV_NoFix, ...
+ContourData_3D = struct('Fr_NoFix', Fr_NoFix, 'mV_NoFix', mV_NoFix, ...
                      'Fr_NoFixVar', Fr_NoFixVar, 'mV_NoFixVar',mV_NoFixVar,...
                      'Trajs', Trajs,...
                      'loopCount',loopCount,'ConvIndi',ConvIndi,...
-                     'S_EItest',S_EItest, 'S_IEtest',S_IEtest);
+                     'S_EItest',S_EItest, 'S_IEtest',S_IEtest,'S_IItest',S_IItest);
 % add important info to the end of filename
-CommentString = ['-' num2str(floor(SimuT/1e3)) 's'];
-save(['ContourData_S_EE=' num2str(S_EE) CommentString '.mat'],'ContourData')
+CommentString = ['_3D'];
+save(['ContourData_S_EE=' num2str(S_EE) CommentString '.mat'],'ContourData_3D')
 %% Contour maps
-Fr_Plot = Fr_NoFix;
-S_IEBound = 8e-3;
-% DeleteInd = false(size(Fr_Plot));
-% DeleteInd(:,:,S_IEtest<S_IEBound) = true;
-Fr_Plot(Fr_NoFix <=eps) = nan;
-
-h(1) = figure('Name','Rough Countour S_EI S_IE');
-subplot 121
-imagesc(S_IEtest,S_EItest,squeeze(Fr_Plot(1,:,:)))
-xlabel('S_{IE}'); ylabel('S_{EI}');
-set(gca,'YDir','Normal')
-colorbar
-caxis([0 15])
-axis square
-hold on
-[C1,h1]= contour(S_IEtest,S_EItest,squeeze(Fr_Plot(1,:,:)),[2 5],'ShowText','on','color','r');
-clabel(C1,h1,'FontSize',10,'Color','k')
-axis square
-hold off
-%axis([min(S_EItest) max(S_EItest) min(S_IEtest) max(S_IEtest)])
-
-subplot 122
-imagesc(S_IEtest,S_EItest,squeeze(Fr_Plot(2,:,:)))
-xlabel('S_{IE}'); ylabel('S_{EI}');
-set(gca,'YDir','Normal')
-colorbar
-caxis([0 45])
-axis square
-hold on
-[C2,h2]= contour(S_IEtest,S_EItest,squeeze(Fr_Plot(2,:,:)),[7 15],'ShowText','on','color','b');
-clabel(C2,h2,'FontSize',10,'Color','k')
-axis square
-hold off
-%axis([min(S_EItest) max(S_EItest) min(S_IEtest) max(S_IEtest)])
-
-h(2) = figure('Name','Convergence');
-imagesc(S_IEtest,S_EItest,ConvIndi)
-xlabel('S_{IE}'); ylabel('S_{EI}');
-set(gca,'YDir','Normal')
-
-% h(3) = figure('Name','Trajectories-Last');
-% subplot 131
-% plot_dir(Fr_NoFixTraj{9,13}(1,end-100:end)',Fr_NoFixTraj{9,13}(2,end-100:end)');
-% xlabel('fE');ylabel('fI')
+% Fr_Plot = Fr_NoFix;
+% S_IEBound = 8e-3;
+% % DeleteInd = false(size(Fr_Plot));
+% % DeleteInd(:,:,S_IEtest<S_IEBound) = true;
+% Fr_Plot(Fr_NoFix <=eps) = nan;
 % 
-% title('last 100 iterations')
+% h(1) = figure('Name','Rough Countour S_EI S_IE');
+% subplot 121
+% imagesc(S_IEtest,S_EItest,squeeze(Fr_Plot(1,:,:)))
+% xlabel('S_{IE}'); ylabel('S_{EI}');
+% set(gca,'YDir','Normal')
+% colorbar
+% caxis([0 15])
+% axis square
+% hold on
+% [C1,h1]= contour(S_IEtest,S_EItest,squeeze(Fr_Plot(1,:,:)),[2 5],'ShowText','on','color','r');
+% clabel(C1,h1,'FontSize',10,'Color','k')
+% axis square
+% hold off
+% %axis([min(S_EItest) max(S_EItest) min(S_IEtest) max(S_IEtest)])
 % 
-% subplot 132
-% plot_dir(Fr_NoFixTraj{9,13}(1,end-50:end)',Fr_NoFixTraj{9,13}(2,end-50:end)');
-% xlabel('fE');ylabel('fI')
+% subplot 122
+% imagesc(S_IEtest,S_EItest,squeeze(Fr_Plot(2,:,:)))
+% xlabel('S_{IE}'); ylabel('S_{EI}');
+% set(gca,'YDir','Normal')
+% colorbar
+% caxis([0 45])
+% axis square
+% hold on
+% [C2,h2]= contour(S_IEtest,S_EItest,squeeze(Fr_Plot(2,:,:)),[7 15],'ShowText','on','color','b');
+% clabel(C2,h2,'FontSize',10,'Color','k')
+% axis square
+% hold off
+% %axis([min(S_EItest) max(S_EItest) min(S_IEtest) max(S_IEtest)])
 % 
-% title('last 50 iterations')
+% h(2) = figure('Name','Convergence');
+% imagesc(S_IEtest,S_EItest,ConvIndi)
+% xlabel('S_{IE}'); ylabel('S_{EI}');
+% set(gca,'YDir','Normal')
 % 
-% subplot 133
-% plot_dir(Fr_NoFixTraj{9,13}(1,end-15:end)',Fr_NoFixTraj{9,13}(2,end-15:end)');
-% xlabel('fE');ylabel('fI')
+% % h(3) = figure('Name','Trajectories-Last');
+% % subplot 131
+% % plot_dir(Fr_NoFixTraj{9,13}(1,end-100:end)',Fr_NoFixTraj{9,13}(2,end-100:end)');
+% % xlabel('fE');ylabel('fI')
+% % 
+% % title('last 100 iterations')
+% % 
+% % subplot 132
+% % plot_dir(Fr_NoFixTraj{9,13}(1,end-50:end)',Fr_NoFixTraj{9,13}(2,end-50:end)');
+% % xlabel('fE');ylabel('fI')
+% % 
+% % title('last 50 iterations')
+% % 
+% % subplot 133
+% % plot_dir(Fr_NoFixTraj{9,13}(1,end-15:end)',Fr_NoFixTraj{9,13}(2,end-15:end)');
+% % xlabel('fE');ylabel('fI')
+% % 
+% % title('last 15 iterations')
 % 
-% title('last 15 iterations')
-
-
-saveas(h,fullfile(FigurePath, ['ContourFigs - S_EE=' num2str(S_EE) CommentString]),'fig')
-close(h)
+% 
+% saveas(h,fullfile(FigurePath, ['ContourFigs - S_EE=' num2str(S_EE) CommentString]),'fig')
+% close(h)
