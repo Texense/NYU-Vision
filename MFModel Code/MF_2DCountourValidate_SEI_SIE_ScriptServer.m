@@ -217,5 +217,5 @@ end
 
 CommentString = 'NWValidate';
 ContourValidate = struct('Fr_NW_Valid',Fr_NW_Valid,'mV_NW_Valid',mV_NW_Valid,'NWtestSeq',NWtestSeq,...
-                         'S_EItest',S_EItest,'S_IEtest',S_EItest);
-save(['ContourData_S_EE=' num2str(S_EE) CommentString '.mat'],ContourValidate)
+                         'S_EItest',S_EItest,'S_IEtest',S_IEtest);
+save(['ContourData_S_EE=' num2str(S_EE) CommentString '.mat'],'ContourValidate')

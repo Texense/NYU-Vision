@@ -80,7 +80,11 @@ LineL1 = polyfit([0.1212 0.4091],[2.1212 0.3939],1); % S_IE first, S_EI. second 
 LineL2 = polyfit([0.1212 0.6061],[1.3636 0.5152],1);
 LineU1 = polyfit([0.1212 0.6061],[3.6970 1.5152],1);
 %% MF estimation: 
-cluster = parpool([4 64]);
+cluster = gcp('nocreate');
+if isempty(cluster)
+    cluster = parpool([4 64]);
+    cluster.IdleTimeout = 120;
+end
 
 %SBound = 3.3; % multipliers of S_EE
 
@@ -97,7 +101,7 @@ ConvIndi = logical(loopCount); % converged or not
 SampleNum = 200;
 StopNum = 300;
 hstep = 0.1;
-SimuT = 5*1e3;
+SimuT = 40*1e3;
 aa = floor(length(S_IEtest)); % Matlab always fail to directly see this as a whole number!!!
 tic
 parfor S_EIInd = 1:length(S_EItest)
