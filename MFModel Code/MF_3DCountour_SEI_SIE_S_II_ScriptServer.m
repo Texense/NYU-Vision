@@ -44,68 +44,7 @@ C_II = ConnectionMat(N_I,NnI,Size_I,...
                      N_I,NnI,Size_I,...
                      Peak_I,SD_I,Dist_LB,1);
 
-%% Variables and Parameters% Fr_Plot = Fr_NoFix;
-% S_IEBound = 8e-3;
-% % DeleteInd = false(size(Fr_Plot));
-% % DeleteInd(:,:,S_IEtest<S_IEBound) = true;
-% Fr_Plot(Fr_NoFix <=eps) = nan;
-% 
-% h(1) = figure('Name','Rough Countour S_EI S_IE');
-% subplot 121
-% imagesc(S_IEtest,S_EItest,squeeze(Fr_Plot(1,:,:)))
-% xlabel('S_{IE}'); ylabel('S_{EI}');
-% set(gca,'YDir','Normal')
-% colorbar
-% caxis([0 15])
-% axis square
-% hold on
-% [C1,h1]= contour(S_IEtest,S_EItest,squeeze(Fr_Plot(1,:,:)),[2 5],'ShowText','on','color','r');
-% clabel(C1,h1,'FontSize',10,'Color','k')
-% axis square
-% hold off
-% %axis([min(S_EItest) max(S_EItest) min(S_IEtest) max(S_IEtest)])
-% 
-% subplot 122
-% imagesc(S_IEtest,S_EItest,squeeze(Fr_Plot(2,:,:)))
-% xlabel('S_{IE}'); ylabel('S_{EI}');
-% set(gca,'YDir','Normal')
-% colorbar
-% caxis([0 45])
-% axis square
-% hold on
-% [C2,h2]= contour(S_IEtest,S_EItest,squeeze(Fr_Plot(2,:,:)),[7 15],'ShowText','on','color','b');
-% clabel(C2,h2,'FontSize',10,'Color','k')
-% axis square
-% hold off
-% %axis([min(S_EItest) max(S_EItest) min(S_IEtest) max(S_IEtest)])
-% 
-% h(2) = figure('Name','Convergence');
-% imagesc(S_IEtest,S_EItest,ConvIndi)
-% xlabel('S_{IE}'); ylabel('S_{EI}');
-% set(gca,'YDir','Normal')
-% 
-% % h(3) = figure('Name','Trajectories-Last');
-% % subplot 131
-% % plot_dir(Fr_NoFixTraj{9,13}(1,end-100:end)',Fr_NoFixTraj{9,13}(2,end-100:end)');
-% % xlabel('fE');ylabel('fI')
-% % 
-% % title('last 100 iterations')
-% % 
-% % subplot 132
-% % plot_dir(Fr_NoFixTraj{9,13}(1,end-50:end)',Fr_NoFixTraj{9,13}(2,end-50:end)');
-% % xlabel('fE');ylabel('fI')
-% % 
-% % title('last 50 iterations')
-% % 
-% % subplot 133
-% % plot_dir(Fr_NoFixTraj{9,13}(1,end-15:end)',Fr_NoFixTraj{9,13}(2,end-15:end)');
-% % xlabel('fE');ylabel('fI')
-% % 
-% % title('last 15 iterations')
-% 
-% 
-% saveas(h,fullfile(FigurePath, ['ContourFigs - S_EE=' num2str(S_EE) CommentString]),'fig')
-% close(h)
+%% Variables and Parameters
 %RefTimeE = zeros(N_E,1); VE = 0.5*rand(N_E,1)-0.5; SpE = sparse(N_E,1); GE_ampa_R = zeros(N_E,1); GE_nmda_R = zeros(N_E,1); GE_gaba_R = zeros(N_E,1); GE_ampa_D = zeros(N_E,1); GE_nmda_D = zeros(N_E,1); GE_gaba_D = zeros(N_E,1);
 %RefTimeI = zeros(N_I,1); VI = 1.5*rand(N_I,1)-0.5; SpI = sparse(N_I,1); GI_ampa_R = zeros(N_I,1); GI_nmda_R = zeros(N_I,1); GI_gaba_R = zeros(N_I,1); GI_ampa_D = zeros(N_I,1); GI_nmda_D = zeros(N_I,1); GI_gaba_D = zeros(N_I,1); 
 load('Initials.mat')

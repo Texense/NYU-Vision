@@ -16,6 +16,6 @@ hold on
 scatter(ContourData.S_IEtest(ContourValidate.NWtestSeq(:,2)),ContourData.S_EItest(ContourValidate.NWtestSeq(:,1)),25,c,'filled')
 hold off
 colorbar
-caxis([0, 1]);
+caxis([0, 0.4]);
 xlabel('S_{IE}');ylabel('S_{EI}')
 title('S_{EE} = 0.029')
