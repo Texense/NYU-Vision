@@ -238,7 +238,7 @@ rE = f_EnI(1)/1000; rI = f_EnI(2)/1000; % f_EnI in s^-1, but here we use ms^-1
 %% Evolve single neurons
 T = LIFSimuT; % in ms. Default: 20*1e3 ms
 dt = 0.1; t = 0:dt:T;
-SampleProp = 1/2; % last half time for meanV
+SampleProp = 3/4; % last half time for meanV
 
 v = zeros(size(t)); 
 G_gaba_D = zeros(size(t)); G_gaba_R = zeros(size(t));
@@ -288,6 +288,6 @@ for tInd = 1:length(t)-1
      G_nmda_R(tInd+1) = (G_nmda_R(tInd) + S_E * Sp_EV1(tInd) * rho_nmda) * exp(-dt/tau_nmda_R);
      G_nmda_D(tInd+1) = (G_nmda_D(tInd) + S_E * Sp_EV1(tInd) * rho_nmda) * exp(-dt/tau_nmda_D);
 end
-meanV = nanmean(v(floor(end*SampleProp):end));
-fr = length(find(spike>SampleProp*T))/(T*SampleProp/1000);
+meanV = nanmean(v(floor(end*(1-SampleProp)):end));
+fr = length(find(spike>(1-SampleProp)*T))/(T*SampleProp/1000);
 end
