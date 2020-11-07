@@ -238,7 +238,7 @@ rE = f_EnI(1)/1000; rI = f_EnI(2)/1000; % f_EnI in s^-1, but here we use ms^-1
 %% Evolve single neurons
 T = LIFSimuT; % in ms. Default: 20*1e3 ms
 dt = 0.1; t = 0:dt:T;
-SampleProp = 3/4; % last half time for meanV
+SampleProp = 9/10; % last half time for meanV
 
 v = zeros(size(t)); 
 G_gaba_D = zeros(size(t)); G_gaba_R = zeros(size(t));

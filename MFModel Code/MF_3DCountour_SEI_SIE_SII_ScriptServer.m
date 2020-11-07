@@ -49,9 +49,10 @@ C_II = ConnectionMat(N_I,NnI,Size_I,...
 %RefTimeI = zeros(N_I,1); VI = 1.5*rand(N_I,1)-0.5; SpI = sparse(N_I,1); GI_ampa_R = zeros(N_I,1); GI_nmda_R = zeros(N_I,1); GI_gaba_R = zeros(N_I,1); GI_ampa_D = zeros(N_I,1); GI_nmda_D = zeros(N_I,1); GI_gaba_D = zeros(N_I,1); 
 load('Initials.mat')
 %parameters
+S_EE = 0.024; S_EI = 0.055*0.024/0.029; %S_IE = 0.0081; S_II = 0.048; %Tuned
 %S_EE = 0.033; S_EI = 0.061; S_IE = 0.0087; S_II = 0.048;
 %S_EE = 0.033; S_EI = 0.061; S_IE = 0.0087; S_II = 0.048;
-S_EE = 0.029; S_EI = 0.055; S_IE = 0.0081; S_II = 0.048; %Tuned
+%S_EE = 0.029; S_EI = 0.055; S_IE = 0.0081; S_II = 0.048; %Tuned
 %S_EE = 0.028; S_EI = 0.056; S_IE = 0.0095; S_II = 0.042; % original
 p_EEFail = 0.2; S_amb = 0.01;
 
@@ -65,63 +66,67 @@ gL_I = 1/15;  Vi = -2/3; S_Ilgn = 0.084; rhoI_ampa = 0.67;rhoI_nmda = 0.33;
 
 lambda_E = 0.08; % ~16 LGN spike can excite a E neurons. 0.25 spike/ms makes 64 ms for such period. 
 lambda_I = 0.08; 
-rE_amb = 0.72; rI_amb = 0.36;
-
+%rE_amb = 0.72; rI_amb = 0.36;
+rE_amb = 0.54; rI_amb = 0.54;
 % Replace S_EI by testing values
 GridNum1 = 32;
 GridNum2 = 32;
-GridNum3 = 30;
-S_EI_Mtp = [0.4, 3.7]; % of S_EE
-S_IE_Mtp = [0.12,1.1]; % of S_EE
-S_II_Mtp = [0.8 3.7];
+GridNum3 = 15;
+S_EI_Mtp = [0.4, 4]; % of S_EE
+S_IE_Mtp = [0.05,0.5]; % of S_II
+S_II_Mtp = [0.5 3.5]; % of current S_EI
 S_EItest = linspace(S_EI_Mtp(1),S_EI_Mtp(2),GridNum1)*S_EE;
-S_IEtest = linspace(S_IE_Mtp(1),S_IE_Mtp(2),GridNum2)*S_EE;
+S_IEtestMtp = linspace(S_IE_Mtp(1),S_IE_Mtp(2),GridNum2);%*S_EE; I only specify a vecter length here
 S_IItest = linspace(S_II_Mtp(1),S_II_Mtp(2),GridNum3)*S_EI;
 % Add lines boundaries
-% LineL1 = polyfit([0.1212 0.4091],[2.1212 0.3939],1); % S_IE first, S_EI. second Those numbers are multipliers
-% LineL2 = polyfit([0.1212 0.6061],[1.3636 0.5152],1);
-% LineU1 = polyfit([0.1212 0.6061],[3.6970 1.5152],1);
+LineL1 = polyfit([0.06 0.14],[2.5 0.4],1); % S_IEMtp first, second S_EIMtp. Those numbers are multipliers of S_II and S_EE
+LineL2 = polyfit([0.06 0.28],[1.5 0.4],1);
+LineU1 = polyfit([0.1  0.5 ],[4   1.5],1);
 %% MF estimation: 
+% creat a 10-hr parallel 
 cluster = gcp('nocreate');
 if isempty(cluster)
     cluster = parpool([4 64]);
-    cluster.IdleTimeout = 1200;
+    cluster.IdleTimeout = 600;
 end
 
 %SBound = 3.3; % multipliers of S_EE
-Fr_NoFix = zeros(2,length(S_EItest),length(S_IEtest),length(S_IItest));
-mV_NoFix = zeros(2,length(S_EItest),length(S_IEtest),length(S_IItest));
-Fr_NoFixVar = zeros(2,length(S_EItest),length(S_IEtest),length(S_IItest));
-mV_NoFixVar = zeros(2,length(S_EItest),length(S_IEtest),length(S_IItest));
-Fr_NoFixTraj = cell(length(S_EItest),length(S_IEtest),length(S_IItest));
-mV_NoFixTraj = cell(length(S_EItest),length(S_IEtest),length(S_IItest));
+Fr_NoFix = zeros(2,length(S_EItest),length(S_IEtestMtp),length(S_IItest));
+mV_NoFix = zeros(2,length(S_EItest),length(S_IEtestMtp),length(S_IItest));
+Fr_NoFixVar = zeros(2,length(S_EItest),length(S_IEtestMtp),length(S_IItest));
+mV_NoFixVar = zeros(2,length(S_EItest),length(S_IEtestMtp),length(S_IItest));
+Fr_NoFixTraj = cell(length(S_EItest),length(S_IEtestMtp),length(S_IItest));
+mV_NoFixTraj = cell(length(S_EItest),length(S_IEtestMtp),length(S_IItest));
 
-loopCount = zeros(length(S_EItest),length(S_IEtest),length(S_IItest)); % count the number of loops
+loopCount = zeros(length(S_EItest),length(S_IEtestMtp),length(S_IItest)); % count the number of loops
 ConvIndi = logical(loopCount); % converged or not
 
 SampleNum = 60;
 StopNum = 200;
 hstep = 0.25;
-SimuT = 20*1e3;
-aa = floor(length(S_IEtest)); % Matlab always fail to directly see this as a whole number!!!
+SimuT = 15*1e3;
+aa = floor(length(S_IEtestMtp)); % Matlab always fail to directly see this as a whole number!!!
 tic
 
 for S_IIInd = 1:length(S_IItest)
     S_II = S_IItest(S_IIInd);
+       
 parfor S_EIInd = 1:length(S_EItest)
     S_EI = S_EItest(S_EIInd);
+    S_IEtest = S_IEtestMtp*S_II; % S_IE based on S_II
+    
     for S_IEInd = 1:aa
     S_IE = S_IEtest(S_IEInd);
     
-%     if (S_EI<=S_IE*LineL1(1)+S_EE*LineL1(2) || S_EI<=S_IE*LineL2(1)+S_EE*LineL2(2) )
-%         disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too high, break...'])
-%         continue
-%     end
-%     
-%     if (S_EI>=S_IE*LineU1(1)+S_EE*LineU1(2) )
-%         disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too low, break...'])
-%         continue
-%     end
+    % cut some redundant regime out of our interest
+    if (S_EI/S_EE<=S_IE/S_II*LineL1(1)+LineL1(2) || S_EI/S_EE<=S_IE/S_II*LineL2(1)+LineL2(2) )
+        disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too high, break...'])
+        continue
+    end    
+    if (S_EI/S_EE>=S_IE/S_II*LineU1(1)+LineU1(2) )
+        disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too low, break...'])
+        continue
+    end
     
     tic
     [Fr_NoFixTraj{S_EIInd,S_IEInd,S_IIInd},mV_NoFixTraj{S_EIInd,S_IEInd,S_IIInd},...
@@ -146,22 +151,19 @@ for S_IIInd = 1:length(S_IItest)
     S_II = S_IItest(S_IIInd);
 for S_EIInd = 1:length(S_EItest)
     S_EI = S_EItest(S_EIInd);
-    for S_IEInd = 1:length(S_IEtest)
-        S_IE = S_IEtest(S_IEInd);
-%     if S_IE*10+S_EI<(SBound+0.01)*S_EE
-%         disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; break...'])
-%         continue
-%     end
-%     if (S_EI<=S_IE*LineL1(1)+S_EE*LineL1(2) || S_EI<=S_IE*LineL2(1)+S_EE*LineL2(2) )
-%         disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too high, break...'])
-%         continue
-%     end
-%     
-%     if (S_EI>=S_IE*LineU1(1)+S_EE*LineU1(2) )
-%         disp(['S_IE = ' num2str(S_IE) ', S_EI = ' num2str(S_EI) '; Fr may be too low, break...'])
-%         continue
-%     end    
-    Fr_NoFix(:,S_EIInd,S_IEInd,S_IIInd) = mean(Fr_NoFixTraj{S_EIInd,S_IEInd,S_IIInd}(:,end-SampleNum:end),2);
+    S_IEtest = S_IEtestMtp*S_II; % S_IE based on S_II
+    for S_IEInd = 1:length(S_IEtestMtp)
+       S_IE = S_IEtest(S_IEInd); 
+    % cut some redundant regime out of our interest
+    if (S_EI/S_EE<=S_IE/S_II*LineL1(1)+LineL1(2) || S_EI/S_EE<=S_IE/S_II*LineL2(1)+LineL2(2) )
+        disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too high, break...'])
+        continue
+    end    
+    if (S_EI/S_EE>=S_IE/S_II*LineU1(1)+LineU1(2) )
+        disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too low, break...'])
+        continue
+    end  
+    Fr_NoFix(:,S_EIInd,S_IEInd,S_IIInd) = mean(Fr_NoFixTraj{S_EIInd,S_IEInd,S_IIInd}(:,end-SampleNum+1:end),2);
     mV_NoFix(:,S_EIInd,S_IEInd,S_IIInd) = mean(mV_NoFixTraj{S_EIInd,S_IEInd,S_IIInd}(:,end-SampleNum:end),2);
     Fr_NoFixVar(:,S_EIInd,S_IEInd,S_IIInd) = var(Fr_NoFixTraj{S_EIInd,S_IEInd,S_IIInd}(:,end-SampleNum:end),0,2);
     mV_NoFixVar(:,S_EIInd,S_IEInd,S_IIInd) = var(mV_NoFixTraj{S_EIInd,S_IEInd,S_IIInd}(:,end-SampleNum:end),0,2);
@@ -174,9 +176,9 @@ ContourData_3D = struct('Fr_NoFix', Fr_NoFix, 'mV_NoFix', mV_NoFix, ...
                      'Fr_NoFixVar', Fr_NoFixVar, 'mV_NoFixVar',mV_NoFixVar,...
                      'Trajs', Trajs,...
                      'loopCount',loopCount,'ConvIndi',ConvIndi,...
-                     'S_EItest',S_EItest, 'S_IEtest',S_IEtest,'S_IItest',S_IItest);
+                     'S_EItest',S_EItest, 'S_IEtestMtp_of_S_II',S_IEtestMtp,'S_IItest',S_IItest);
 % add important info to the end of filename
-CommentString = ['_3D_expandSII'];
+CommentString = ['_3D_expandSII_AllMultipliers'];
 save(['ContourData_S_EE=' num2str(S_EE) CommentString '.mat'],'ContourData_3D')
 %% Contour maps
 % Fr_Plot = Fr_NoFix;
