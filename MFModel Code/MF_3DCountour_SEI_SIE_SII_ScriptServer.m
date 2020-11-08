@@ -178,7 +178,7 @@ ContourData_3D = struct('Fr_NoFix', Fr_NoFix, 'mV_NoFix', mV_NoFix, ...
                      'loopCount',loopCount,'ConvIndi',ConvIndi,...
                      'S_EItest',S_EItest, 'S_IEtestMtp_of_S_II',S_IEtestMtp,'S_IItest',S_IItest);
 % add important info to the end of filename
-CommentString = ['_3D_expandSII_AllMultipliers'];
+CommentString = ['_3D_rIamb540'];
 save(['ContourData_S_EE=' num2str(S_EE) CommentString '.mat'],'ContourData_3D')
 %% Contour maps
 % Fr_Plot = Fr_NoFix;
