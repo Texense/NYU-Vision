@@ -104,7 +104,7 @@ end
 cluster = gcp('nocreate');
 if isempty(cluster)
     cluster = parpool([4 64]);
-    cluster.IdleTimeout = 120;
+    cluster.IdleTimeout = 1200;
 end
 
 Fr_NW_Valid = zeros(2,length(NWtestSeq));

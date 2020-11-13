@@ -82,14 +82,15 @@ S_IItest = linspace(S_II_Mtp(1),S_II_Mtp(2),GridNum3)*S_EI;
 LineL1 = polyfit([0.06 0.14],[2.5 0.4],1); % S_IEMtp first, second S_EIMtp. Those numbers are multipliers of S_II and S_EE
 LineL2 = polyfit([0.06 0.28],[1.5 0.4],1);
 LineU1 = polyfit([0.1  0.5 ],[4   1.5],1);
-%% MF estimation: 
+
 % creat a 10-hr parallel 
 cluster = gcp('nocreate');
 if isempty(cluster)
     cluster = parpool([4 64]);
-    cluster.IdleTimeout = 600;
+    cluster.IdleTimeout = 1200;
 end
 
+%% MF estimation: 
 %SBound = 3.3; % multipliers of S_EE
 Fr_NoFix = zeros(2,length(S_EItest),length(S_IEtestMtp),length(S_IItest));
 mV_NoFix = zeros(2,length(S_EItest),length(S_IEtestMtp),length(S_IItest));
