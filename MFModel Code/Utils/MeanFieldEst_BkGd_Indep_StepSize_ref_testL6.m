@@ -118,7 +118,7 @@ while SteadyCounter<AveLoop %the formal ending condition
                                          gL_E,gL_I,Ve,Vi,LIFSimuT);
                                      
 %% NOW! consider the previous mVs if it already satisfies steady condition
-if loop>50
+if loop>100
     mVEIn = mean(meanVs(1,end-10+1:end)) * 0.9 + mVE*0.1;
     mVIIn = mean(meanVs(2,end-10+1:end)) * 0.9 + mVI*0.1;
 else
@@ -317,14 +317,14 @@ spike = [];
 %rng(100)
 % input determination: Assume all Poisson
 %rng(100)
-p_lgn = dt*lambda;                    Sp_lgn = double(poissrnd(p_lgn,size(t)));
+p_lgn = dt*lambda;                    Sp_lgn = double(rand(size(t))<=p_lgn);
 %rng(101)
-p_amb = dt*r_amb;                     Sp_amb = double(poissrnd(p_amb,size(t)));
+p_amb = dt*r_amb;                     Sp_amb = double(rand(size(t))<=p_amb);
 %rng(102)
-p_EV1 = dt*rE*full(N_E)*(1-p_Fail);   Sp_EV1 = double(poissrnd(p_EV1,size(t))); 
+p_EV1 = dt*rE*full(N_E)*(1-p_Fail);   Sp_EV1 = double(rand(size(t))<=p_EV1);
 %rng(103)
-p_IV1 = dt*rI*full(N_I);              Sp_IV1 = double(poissrnd(p_IV1,size(t))); 
-p_L6  = dt*r_L6;                      Sp_L6  = double(poissrnd(p_L6 ,size(t)));
+p_IV1 = dt*rI*full(N_I);              Sp_IV1 = double(rand(size(t))<=p_IV1);
+p_L6  = dt*r_L6;                      Sp_L6  = double(rand(size(t))<=p_L6);
 
 RefTimer = 0; 
 for tInd = 1:length(t)-1

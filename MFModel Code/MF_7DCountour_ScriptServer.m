@@ -116,9 +116,10 @@ ConvIndi = logical(loopCount); % converged or not
 
 SampleNum = 50;
 StopNum = 300;
-hstep = 1;
+h = 1;
 SimuT = 20*1e3;
 aa = floor(length(S_IEtest)); % Matlab always fail to directly see this as a whole number!!!
+bb = floor(length(S_EItest));
 tic
 
 for PanelInd = 1:PanelNum1*PanelNum2
@@ -126,9 +127,10 @@ for PanelInd = 1:PanelNum1*PanelNum2
     rI_L6Ind  = mod(PanelInd,PanelNum2);
     rI_L6Ind(rI_L6Ind==0) = PanelNum2;
 
-    S_Ilgn = S_Ilgntest(S_Ilgn);
+    S_Ilgn = S_Ilgntest(S_IlgnInd);
     rI_L6 = rI_L6test(rI_L6Ind);
-       
+    
+
 parfor S_EIInd = 1:length(S_EItest)
     S_EI = S_EItest(S_EIInd);
     
@@ -149,7 +151,7 @@ parfor S_EIInd = 1:length(S_EItest)
     tic
     [Fr_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind},mV_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind},...
      loopCount(S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind),   ConvIndi(S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind)    ]...
-                  = MeanFieldEst_BkGd_Indep_StepSize_TestmV(C_EE,C_EI,C_IE,C_II,...
+                  = MeanFieldEst_BkGd_Indep_StepSize_ref_testL6(C_EE,C_EI,C_IE,C_II,...
                                             S_EE,S_EI,S_IE,S_II,p_EEFail,...
                                             lambda_E,S_Elgn,rE_amb,S_amb,...
                                             lambda_I,S_Ilgn,rI_amb,...
@@ -157,7 +159,7 @@ parfor S_EIInd = 1:length(S_EItest)
                                             tau_ampa_R,tau_ampa_D,tau_nmda_R,tau_nmda_D,tau_gaba_R,tau_gaba_D,tau_ref,...
                                             rhoE_ampa,rhoE_nmda,rhoI_ampa,rhoI_nmda,...
                                             gL_E,gL_I,Ve,Vi,...
-                                            N_HC,n_E_HC,n_I_HC,'End',SampleNum,MaxNum,h,SimuT);
+                                            N_HC,n_E_HC,n_I_HC,'End',SampleNum,StopNum,h,SimuT);
                                         
     toc    
     end
@@ -170,11 +172,11 @@ for PanelInd = 1:PanelNum1*PanelNum2
     rI_L6Ind  = mod(PanelInd,PanelNum2);
     rI_L6Ind(rI_L6Ind==0) = PanelNum2;
 
-    S_Ilgn = S_Ilgntest(S_Ilgn);
+    S_Ilgn = S_Ilgntest(S_IlgnInd);
     rI_L6 = rI_L6test(rI_L6Ind);
 for S_EIInd = 1:length(S_EItest)
     S_EI = S_EItest(S_EIInd);
-    S_IEtest = S_IEtest*S_II; % S_IE based on S_II
+    
     for S_IEInd = 1:length(S_IEtest)
        S_IE = S_IEtest(S_IEInd); 
     % cut some redundant regime out of our interest
