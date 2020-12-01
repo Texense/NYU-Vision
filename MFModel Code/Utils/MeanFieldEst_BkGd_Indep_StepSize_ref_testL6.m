@@ -9,7 +9,7 @@
 %        S_Elgn S_Ilgn S_amb Synaptic strength of drives
 %        gL_E,gL_I           Leaky time constants
 %        Ve,Vi               Reversak potentials
-%        mVE,mVI             Mean Vs, collected from simulation
+%        mVE,mVI             Mean Vs, collected from simulationsave('fig9MLMC.mat',fig9MLMC
 %        varargin            >34: 'Mean' or 'Traj', indicate the form of the output
 %                            >35: Sample Number after stopping criteria
 %                            >36: Max Iteration before converged
@@ -79,9 +79,9 @@ I_Ind = (reshape(I_Ind_X,size(I_Ind_X,1)*size(I_Ind_X,2),1)-1)*n_I_HC*N_HC + res
 N_EE = mean(sum(C_EE(E_Ind,:),2)); N_EI = mean(sum(C_EI(E_Ind,:),2)); 
 N_IE = mean(sum(C_IE(I_Ind,:),2)); N_II = mean(sum(C_II(I_Ind,:),2));
 % initialize with a reasonable guess     
-%mVE = 0.57; mVI = 0.67; 
-%mVE =  0.539; mVI = 0.683; 
 mVE = 0.57; mVI = 0.67; 
+%mVE =  0.539; mVI = 0.683; 
+%mVE = 0.5; mVI = 0.5; 
 meanVs = [mVE;mVI];
 f_EnIIni = MeanFieldEst_BkGd_L6(N_EE,N_EI,N_IE,N_II,...
                                    S_EE,S_EI,S_IE,S_II,p_EEFail,...
@@ -135,7 +135,7 @@ f_EnI0 = MeanFieldEst_BkGd_ref_L6(N_EE,N_EI,N_IE,N_II,...
                                    gL_E,gL_I,Ve,Vi,mVEIn,mVIIn,...
                                    tau_ref,f_EnIIni);
 
-f_EnI0 = max([f_EnI0,[0;0]],[],2);
+%f_EnI0 = max([f_EnI0,[0;0]],[],2);
 %f_EnI0 = abs(f_EnI0);                                     
 %% The new input!
 f_EnIIni = f_EnI0*h_Step + f_EnIIni*(1-h_Step);

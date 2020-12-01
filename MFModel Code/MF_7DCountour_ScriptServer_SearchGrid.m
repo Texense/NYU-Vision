@@ -63,7 +63,10 @@ tau_ref = 2; % time unit is ms
 dt = 0.2;
 gL_E = 1/20;  Ve = 14/3; S_Elgn = 2*S_EE; rhoE_ampa = 0.8; rhoE_nmda = 0.2;
 gL_I = 1/15;  Vi = -2/3; %S_Ilgn = 0.084; 
-rhoI_ampa = 0.67;rhoI_nmda = 0.33;
+rhoI_ampa = 0.67;rhoI_nmda = 0.33;SampleNum = 50;
+StopNum = 300;
+h = 1;
+SimuT = 20*1e3;
 
 lambda_E = 0.08; % ~16 LGN spike can excite a E neurons. 0.25 spike/ms makes 64 ms for such period. 
 lambda_I = 0.08; 
@@ -84,16 +87,19 @@ S_EItest = linspace(S_EI_Mtp(1),S_EI_Mtp(2),GridNum1)*S_EE;
 S_IEtest = linspace(S_IE_Mtp(1),S_IE_Mtp(2),GridNum2)*S_II;%*S_EE; I only specify a vecter length here
 % Panel: Two proportions
 PanelNum1 = 5;
-PanelNum2 = 6;
-S_Ilgn_Mtp = [1, 3]; % of S_Elgn
-rI_L6_Mtp  = [1, 6]; % of rE_L6
+PanelNum2 = 2;
+S_Ilgn_Mtp = [1, 3]; % of S_ElgnSampleNum = 50;
+StopNum = 300;
+h = 1;
+SimuT = 20*1e3;
+rI_L6_Mtp  = [1, 2]; % of rE_L6
 S_Ilgntest = linspace(S_Ilgn_Mtp(1),S_Ilgn_Mtp(2),PanelNum1)*S_Elgn;
 rI_L6test = linspace(rI_L6_Mtp(1),rI_L6_Mtp(2),PanelNum2)*rE_L6;
 
 % Add lines boundaries
 LineL1 = polyfit([0.06 0.14],[2.5 0.4],1); % S_IEMtp first, second S_EIMtp. Those numbers are multipliers of S_II and S_EE
 LineL2 = polyfit([0.06 0.28],[1.5 0.4],1);
-LineU1 = polyfit([0.1  0.5 ],[4   1.5],1);
+LineU1 = polyfit([0.1  0.5 ],[4.5   1.3],1);
 
 % creat a 10-hr parallel 
 cluster = gcp('nocreate');
@@ -114,6 +120,14 @@ mV_NoFixTraj = cell(length(S_EItest),length(S_IEtest),length(S_Ilgntest),length(
 loopCount = zeros(length(S_EItest),length(S_IEtest),length(S_Ilgntest),length(rI_L6test)); % count the number of loops
 ConvIndi = logical(loopCount); % converged or not
 
+% define grid search storage
+Grid_Simul= struct('NewLoc',   [],...
+                   'FrTraj',   cell(length(S_Ilgntest),length(rI_L6test)),...
+                   'mVTraj',   cell(length(S_Ilgntest),length(rI_L6test)),...
+                   'FrEst',    [],...
+                   'mVEst',    []); % For 
+               
+               
 SampleNum = 50;
 StopNum = 300;
 h = 1;
@@ -143,10 +157,10 @@ for S_EIInd = 1:length(S_EItest)
 %         disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too high, break...'])
 %         continue
 %     end    
-%     if (S_EI/S_EE>=S_IE/S_II*LineU1(1)+LineU1(2) )
-%         disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too low, break...'])
-%         continue
-%     end
+    if (S_EI/S_EE>=S_IE/S_II*LineU1(1)+LineU1(2) )
+        disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too low, break...'])
+        continue
+    end
     
     tic
     [Fr_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind},mV_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind},...
@@ -161,41 +175,22 @@ for S_EIInd = 1:length(S_EItest)
                                             gL_E,gL_I,Ve,Vi,...
                                             N_HC,n_E_HC,n_I_HC,'End',SampleNum,StopNum,h,SimuT);
                                         
-    toc    
-    end
-end
-end
-toc 
-
-for PanelInd = 1:PanelNum1*PanelNum2
-    S_IlgnInd = ceil(PanelInd/PanelNum2);
-    rI_L6Ind  = mod(PanelInd,PanelNum2);
-    rI_L6Ind(rI_L6Ind==0) = PanelNum2;
-
-    S_Ilgn = S_Ilgntest(S_IlgnInd);
-    rI_L6 = rI_L6test(rI_L6Ind);
-for S_EIInd = 1:length(S_EItest)
-    S_EI = S_EItest(S_EIInd);
+    toc  
     
-    for S_IEInd = 1:length(S_IEtest)
-       S_IE = S_IEtest(S_IEInd); 
-    % cut some redundant regime out of our interest
-%     if (S_EI/S_EE<=S_IE/S_II*LineL1(1)+LineL1(2) || S_EI/S_EE<=S_IE/S_II*LineL2(1)+LineL2(2) )
-%         disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too high, break...'])
-%         continue
-%     end    
-%     if (S_EI/S_EE>=S_IE/S_II*LineU1(1)+LineU1(2) )
-%         disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too low, break...'])
-%         continue
-%     end  
     Fr_NoFix(:,S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind) = mean(Fr_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind}(:,end-SampleNum+1:end),2);
     mV_NoFix(:,S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind) = mean(mV_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind}(:,end-SampleNum:end),2);
     Fr_NoFixVar(:,S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind) = var(Fr_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind}(:,end-SampleNum:end),0,2);
     mV_NoFixVar(:,S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind) = var(mV_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind}(:,end-SampleNum:end),0,2);
     end
+    
+    %% Consider grids closest to the region we care about: Point closest to rE = 4 on each column (same S_IE)
+    CurrentFrE = Fr_NoFix(1,:,:,S_IlgnInd,rI_L6Ind); CurrentFrI = Fr_NoFix(2,:,:,S_IlgnInd,rI_L6Ind);
+    
 end
 end
-% save data
+toc 
+
+%% save data
 %Trajs = struct('Fr_NoFixTraj', Fr_NoFixTraj, 'mV_NoFixTraj',mV_NoFixTraj);
 ContourData_7D = ws2struct();
 % add important info to the end of filename
