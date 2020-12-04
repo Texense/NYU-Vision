@@ -29,7 +29,7 @@
 % Ver Test3.3: To compensate the overstimate: add ref to MF estimate
 % Ver 4:       L6 added
 % iteration
-function [f_EnIOut,meanVs,loop,SteadyIndicate] = MeanFieldEst_BkGd_Indep_StepSize_ref_testL6(C_EE,C_EI,C_IE,C_II,... %4
+function [f_EnIOut,meanVs,loop,SteadyIndicate,FailureIndicate] = MeanFieldEst_BkGd_Indep_StepSize_ref_testL6(C_EE,C_EI,C_IE,C_II,... %4
                                    S_EE,S_EI,S_IE,S_II,p_EEFail,... %5
                                    lambda_E,S_Elgn,rE_amb,S_amb,... %4
                                    lambda_I,S_Ilgn,rI_amb,... %3
@@ -96,6 +96,9 @@ SteadyCounter = 0; % Indicate the number of loops after steady condition
 SteadyIndicate = false;
 TestPoints = floor(15); % How many consecutive points we test
 %while( norm([mVEpre;mVIpre] - [mVE;mVI]) > 0.01 || norm(f_EnIpre - f_EnI0)>0.1) %%% relative difference for firing rates!!
+
+FailureIndicate = 0;
+Suspicious = false;
 while SteadyCounter<AveLoop %the formal ending condition
 % simulate one neuron with input                             
 [mVE,~] = MEanFieldEst_SingleCell_L6('e', f_EnIIni, ...
@@ -122,8 +125,8 @@ if loop>100
     mVEIn = mean(meanVs(1,end-10+1:end)) * 0.9 + mVE*0.1;
     mVIIn = mean(meanVs(2,end-10+1:end)) * 0.9 + mVI*0.1;
 else
-    mVEIn = mVE;
-    mVIIn = mVI;
+     mVEIn = mVE;
+     mVIIn = mVI;
 end
 
 % estimate with ref now
@@ -135,6 +138,8 @@ f_EnI0 = MeanFieldEst_BkGd_ref_L6(N_EE,N_EI,N_IE,N_II,...
                                    gL_E,gL_I,Ve,Vi,mVEIn,mVIIn,...
                                    tau_ref,f_EnIIni);
 
+Suspicious = (min(f_EnI0)<0);
+                               
 %f_EnI0 = max([f_EnI0,[0;0]],[],2);
 %f_EnI0 = abs(f_EnI0);                                     
 %% The new input!
@@ -152,6 +157,10 @@ if ~SteadyIndicate
   end  
 else 
     SteadyCounter = SteadyCounter+1;
+end
+
+if (loop>100 | SteadyIndicate) & Suspicious
+    FailureIndicate = 1;
 end
 
 % break out if not reaching convergence after 100 iterations. Tbis number
