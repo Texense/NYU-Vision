@@ -83,8 +83,8 @@ S_IE_Mtp = [0.05,0.5]; % of S_II
 S_EItest = linspace(S_EI_Mtp(1),S_EI_Mtp(2),GridNum1)*S_EE;
 S_IEtest = linspace(S_IE_Mtp(1),S_IE_Mtp(2),GridNum2)*S_II;%*S_EE; I only specify a vecter length here
 % Panel: Two proportions
-PanelNum1 = 2;
-PanelNum2 = 2;
+PanelNum1 = 5;
+PanelNum2 = 6;
 S_Ilgn_Mtp = [1, 3]; % of S_Elgn
 rI_L6_Mtp  = [1, 6]; % of rE_L6
 S_Ilgntest = linspace(S_Ilgn_Mtp(1),S_Ilgn_Mtp(2),PanelNum1)*S_Elgn;
