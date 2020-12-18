@@ -83,17 +83,17 @@ S_IE_Mtp = [0.1,0.32]; % of S_II
 S_EItest = linspace(S_EI_Mtp(1),S_EI_Mtp(2),GridNum1)*S_EE;
 S_IEtest = linspace(S_IE_Mtp(1),S_IE_Mtp(2),GridNum2)*S_II;%*S_EE; I only specify a vecter length here
 % Panel: Two proportions
-PanelNum1 = 4;
-PanelNum2 = 1;
-S_Ilgn_Mtp = [1, 2.5]; % of S_Elgn
-rI_L6_Mtp  = [2 2]; % of rE_L6
+PanelNum1 = 1;
+PanelNum2 = 5;
+S_Ilgn_Mtp = [1.5, 1.5]; % of S_Elgn
+rI_L6_Mtp  = [1 5]; % of rE_L6
 S_Ilgntest = linspace(S_Ilgn_Mtp(1),S_Ilgn_Mtp(2),PanelNum1)*S_Elgn;
 rI_L6test = linspace(rI_L6_Mtp(1),rI_L6_Mtp(2),PanelNum2)*rE_L6;
 
 % Add lines boundaries
-LineL1 = polyfit([0.1  0.24],[1.8 0.8],1); % S_IEMtp first, second S_EIMtp. Those numbers are multipliers of S_II and S_EE
+LineL1 = polyfit([0.1  0.2],[1.6 0.8],1); % S_IEMtp first, second S_EIMtp. Those numbers are multipliers of S_II and S_EE
 LineL2 = polyfit([0.06 0.28],[1.5 0.4],1);
-LineU1 = polyfit([0.1  0.32 ],[2.5 0.8],1);
+LineU1 = polyfit([0.1  0.3 ],[2.6 1.0],1);
 
 % creat a 10-hr parallel 
 cluster = gcp('nocreate');
@@ -141,11 +141,11 @@ parfor S_EIInd = 1:length(S_EItest)
     
     %cut some redundant regime out of our interest
     if (S_EI/S_EE<=S_IE/S_II*LineL1(1)+LineL1(2) || S_EI/S_EE<=S_IE/S_II*LineL2(1)+LineL2(2) )
-        disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too high, break...'])
+        disp(['S_IE = ' num2str(S_IE/S_II,'%.3f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.3f') '*S_EE; Fr may be too high, break...'])
         continue
     end    
     if (S_EI/S_EE>=S_IE/S_II*LineU1(1)+LineU1(2) )
-        disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too low, break...'])
+        disp(['S_IE = ' num2str(S_IE/S_II,'%.3f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.3f') '*S_EE; Fr may be too low, break...'])
         continue
     end
     
@@ -182,14 +182,14 @@ for S_EIInd = 1:length(S_EItest)
     for S_IEInd = 1:length(S_IEtest)
        S_IE = S_IEtest(S_IEInd); 
     % cut some redundant regime out of our interest
-%     if (S_EI/S_EE<=S_IE/S_II*LineL1(1)+LineL1(2) || S_EI/S_EE<=S_IE/S_II*LineL2(1)+LineL2(2) )
-%         disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too high, break...'])
-%         continue
-%     end    
-%     if (S_EI/S_EE>=S_IE/S_II*LineU1(1)+LineU1(2) )
-%         disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too low, break...'])
-%         continue
-%     end  
+    if (S_EI/S_EE<=S_IE/S_II*LineL1(1)+LineL1(2) || S_EI/S_EE<=S_IE/S_II*LineL2(1)+LineL2(2) )
+        %disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too high, break...'])
+        continue
+    end    
+    if (S_EI/S_EE>=S_IE/S_II*LineU1(1)+LineU1(2) )
+        %disp(['S_IE = ' num2str(S_IE/S_II,'%.2f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.2f') '*S_EE; Fr may be too low, break...'])
+        continue
+    end  
     Fr_NoFix(:,S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind) = mean(Fr_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind}(:,end-SampleNum+1:end),2);
     mV_NoFix(:,S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind) = mean(mV_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind}(:,end-SampleNum:end),2);
     Fr_NoFixVar(:,S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind) = var(Fr_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind}(:,end-SampleNum:end),0,2);
@@ -201,7 +201,7 @@ end
 %Trajs = struct('Fr_NoFixTraj', Fr_NoFixTraj, 'mV_NoFixTraj',mV_NoFixTraj);
 ContourData_7D = ws2struct();
 % add important info to the end of filename
-CommentString = ['_7D_HHigherRes'];
+CommentString = ['_7D_HHigherRes_rIL6'];
 save(['ContourData_S_EE=' num2str(S_EE) CommentString '.mat'],'ContourData_7D')
 %% Contour maps
 % Fr_Plot = Fr_NoFix;
