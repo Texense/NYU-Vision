@@ -50,7 +50,7 @@ p_EAmb = dt*rE_amb; p_IAmb = dt*rI_amb;
 % SpE_amb = sparse(poissrnd(p_EAmb,size(VE))); SpI_amb = sparse(poissrnd(p_IAmb,size(VI)));
 SpE_amb = sparse(double(rand(size(VE))<=p_EAmb)); SpI_amb = sparse(double(rand(size(VI))<=p_IAmb));
 % L6
-p_EL6 = dt*rE_L6; p_IL6 = dt*rI_L6;
+p_EL6  = dt*rE_L6; p_IL6 = dt*rI_L6;
 % SpE_L6 = sparse(poissrnd(p_EL6,size(VE))); SpI_L6 = sparse(poissrnd(p_IL6,size(VI)));
 SpE_L6 = sparse(double(rand(size(VE))<=p_EL6)); SpI_L6 = sparse(double(rand(size(VI))<=p_IL6));
 
