@@ -71,27 +71,29 @@ lambda_I = 0.08;
 rE_amb = 0.50; rI_amb = 0.50;
 
 %L6 input
-S_IEOneTime = 0.20*S_II;
-S_EL6 = 1/3*S_EE; S_IL6 = 1/3*S_IEOneTime;
+%S_IEOneTime = 0.20*S_II;
+S_EL6 = 1/3*S_EE; % S_IL6 = 1/3*S_IEOneTime; Now S_IL6 is porp to S_IE
 rE_L6 = 0.25; % rI_L6 to be determined
 
 % Replace S_EI by testing values
 GridNum1 = 16*4*3;
 GridNum2 = 16*4*3;
 S_EI_Mtp = [0.8, 2.5]; % of S_EE
-S_IE_Mtp = [0.1,0.32]; % of S_II
+S_IE_Mtp = [0.1, 0.3]; % of S_II
 S_EItest = linspace(S_EI_Mtp(1),S_EI_Mtp(2),GridNum1)*S_EE;
 S_IEtest = linspace(S_IE_Mtp(1),S_IE_Mtp(2),GridNum2)*S_II;%*S_EE; I only specify a vecter length here
+
+S_IL6test = 1/3 * S_IEtest; 
 % Panel: Two proportions
-PanelNum1 = 1;
-PanelNum2 = 5;
-S_Ilgn_Mtp = [1.5, 1.5]; % of S_Elgn
-rI_L6_Mtp  = [1 5]; % of rE_L6
+PanelNum1 = 2;
+PanelNum2 = 3;
+S_Ilgn_Mtp = [1, 1.5]; % of S_Elgn
+rI_L6_Mtp  = [2  4]; % of rE_L6
 S_Ilgntest = linspace(S_Ilgn_Mtp(1),S_Ilgn_Mtp(2),PanelNum1)*S_Elgn;
 rI_L6test = linspace(rI_L6_Mtp(1),rI_L6_Mtp(2),PanelNum2)*rE_L6;
 
 % Add lines boundaries
-LineL1 = polyfit([0.1  0.2],[1.6 0.8],1); % S_IEMtp first, second S_EIMtp. Those numbers are multipliers of S_II and S_EE
+LineL1 = polyfit([0.1  0.2 ],[1.6 0.8],1); % S_IEMtp first, second S_EIMtp. Those numbers are multipliers of S_II and S_EE
 LineL2 = polyfit([0.06 0.28],[1.5 0.4],1);
 LineU1 = polyfit([0.1  0.3 ],[2.6 1.0],1);
 
@@ -137,8 +139,8 @@ parfor S_EIInd = 1:length(S_EItest)
     
     
     for S_IEInd = 1:aa
-    S_IE = S_IEtest(S_IEInd);
-    
+    S_IE  = S_IEtest(S_IEInd);
+    S_IL6 = S_IL6test(S_IEInd);
     %cut some redundant regime out of our interest
     if (S_EI/S_EE<=S_IE/S_II*LineL1(1)+LineL1(2) || S_EI/S_EE<=S_IE/S_II*LineL2(1)+LineL2(2) )
         disp(['S_IE = ' num2str(S_IE/S_II,'%.3f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.3f') '*S_EE; Fr may be too high, break...'])
@@ -201,7 +203,7 @@ end
 %Trajs = struct('Fr_NoFixTraj', Fr_NoFixTraj, 'mV_NoFixTraj',mV_NoFixTraj);
 ContourData_7D = ws2struct();
 % add important info to the end of filename
-CommentString = ['_7D_HHigherRes_rIL6'];
+CommentString = ['_7D_HHigherRes_S_L6Modfd'];
 save(['ContourData_S_EE=' num2str(S_EE) CommentString '.mat'],'ContourData_7D')
 %% Contour maps
 % Fr_Plot = Fr_NoFix;
