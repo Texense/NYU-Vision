@@ -85,10 +85,10 @@ S_IEtest = linspace(S_IE_Mtp(1),S_IE_Mtp(2),GridNum2)*S_II;%*S_EE; I only specif
 
 S_IL6test = 1/3 * S_IEtest; 
 % Panel: Two proportions
-PanelNum1 = 2;
-PanelNum2 = 3;
-S_Ilgn_Mtp = [1.5 2]; % of S_Elgn
-rI_L6_Mtp  = [2   4]; % of rE_L6
+PanelNum1 = 4;
+PanelNum2 = 5;
+S_Ilgn_Mtp = [1  2.5]; % of S_Elgn
+rI_L6_Mtp  = [1  5]; % of rE_L6
 S_Ilgntest = linspace(S_Ilgn_Mtp(1),S_Ilgn_Mtp(2),PanelNum1)*S_Elgn;
 rI_L6test = linspace(rI_L6_Mtp(1),rI_L6_Mtp(2),PanelNum2)*rE_L6;
 
