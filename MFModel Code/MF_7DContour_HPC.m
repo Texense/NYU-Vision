@@ -109,12 +109,12 @@ LineL2 = polyfit([0.06 0.28],[1.5 0.4],1);
 LineU1 = polyfit([0.1  0.3 ],[2.5 0.8],1);
 
 % creat a 10-hr parallel
-cluster = gcp('nocreate');
-if isempty(cluster)
-    cluster = parpool([4 64]);
-    cluster.IdleTimeout = 1200;
-end
-
+% cluster = gcp('nocreate');
+% if isempty(cluster)
+%     cluster = parpool([4 64]);
+% %    cluster.IdleTimeout = 1200;
+% end
+cluster = parpool([4 64]);
 %% MF estimation:
 %SBound = 3.3; % multipliers of S_EE
 Fr_NoFix = zeros(2,length(S_EItest),length(S_IEtest) );
