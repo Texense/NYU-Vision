@@ -76,8 +76,8 @@ S_EL6 = 1/3*S_EE; % S_IL6 = 1/3*S_IEOneTime; Now S_IL6 is porp to S_IE
 rE_L6 = 0.25; % rI_L6 to be determined
 
 % Replace S_EI by testing values
-GridNum1 = 160;
-GridNum2 = 160;
+GridNum1 = 16; %160
+GridNum2 = 16; %160
 S_EI_Mtp = [0.8, 2.2]; % of S_EE
 S_IE_Mtp = [0.1, 0.27]; % of S_II
 S_EItest = linspace(S_EI_Mtp(1),S_EI_Mtp(2),GridNum1)*S_EE;
@@ -85,8 +85,8 @@ S_IEtest = linspace(S_IE_Mtp(1),S_IE_Mtp(2),GridNum2)*S_II;%*S_EE; I only specif
 
 S_IL6test = 1/3 * S_IEtest; 
 % Panel: Two proportions
-PanelNum1 = 4;
-PanelNum2 = 5;
+PanelNum1 = 4; %4
+PanelNum2 = 5; %5
 S_Ilgn_Mtp = [1  2.5]; % of S_Elgn
 rI_L6_Mtp  = [1  5]; % of rE_L6
 S_Ilgntest = linspace(S_Ilgn_Mtp(1),S_Ilgn_Mtp(2),PanelNum1)*S_Elgn;
