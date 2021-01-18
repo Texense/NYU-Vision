@@ -1,7 +1,16 @@
+%% Script for HPC:
+% Fix S_EE, Run for different S_ILGN and r_IL6, each for one panel
+% PanelInd: 1~PanelNum1*PanelNum2
+function [] = MF_7DContour_HPC(PanelInd,PanelNum1,PanelNum2)
+if PanelInd>PanelNum1*PanelNum2
+    disp('Illigal panel ind')
+    return
+end
+
 %% A Rough Estimation Contour for S_EI and S_IE
 % first, setup connctivity map
-CurrentFolder = pwd
-FigurePath = [CurrentFolder '/Figures'];
+CurrentFolder = pwd;
+%FigurePath = [CurrentFolder '/Figures'];
 addpath(CurrentFolder)
 addpath([CurrentFolder '/Utils'])
 addpath([CurrentFolder '/Data'])
@@ -50,7 +59,7 @@ C_II = ConnectionMat(N_I,NnI,Size_I,...
 %1.5*rand(N_I,1)-0.5; SpI = sparse(N_I,1); GI_ampa_R = zeros(N_I,1);
 %GI_nmda_R = zeros(N_I,1); GI_gaba_R = zeros(N_I,1); GI_ampa_D =
 %zeros(N_I,1); GI_nmda_D = zeros(N_I,1); GI_gaba_D = zeros(N_I,1);
-load('Initials.mat')
+%load('Initials.mat')
 %parameters
 S_EE = 0.024; S_II = 0.120; %S_IE = 0.0081; S_II = 0.048; %Tuned
 %S_EE = 0.033; S_EI = 0.061; S_IE = 0.0087; S_II = 0.048; S_EE = 0.033;
@@ -63,7 +72,7 @@ tau_ampa_R = 0.5; tau_ampa_D = 3;
 tau_nmda_R = 2; tau_nmda_D = 80;
 tau_gaba_R = 0.5; tau_gaba_D = 5;
 tau_ref = 2; % time unit is ms
-dt = 0.2;
+%dt = 0.2;
 gL_E = 1/20;  Ve = 14/3; S_Elgn = 2*S_EE; rhoE_ampa = 0.8; rhoE_nmda = 0.2;
 gL_I = 1/15;  Vi = -2/3; %S_Ilgn = 0.084;
 rhoI_ampa = 0.67;rhoI_nmda = 0.33;
@@ -87,8 +96,8 @@ S_IEtest = linspace(S_IE_Mtp(1),S_IE_Mtp(2),GridNum2)*S_II;%*S_EE; I only specif
 
 S_IL6test = 1/3 * S_IEtest;
 % Panel: Two proportions
-PanelNum1 = 4; %4
-PanelNum2 = 5; %5
+% PanelNum1 = 4; %4
+% PanelNum2 = 5; %5
 S_Ilgn_Mtp = [1  2.5]; % of S_Elgn
 rI_L6_Mtp  = [1  5]; % of rE_L6
 S_Ilgntest = linspace(S_Ilgn_Mtp(1),S_Ilgn_Mtp(2),PanelNum1)*S_Elgn;
@@ -108,14 +117,14 @@ end
 
 %% MF estimation:
 %SBound = 3.3; % multipliers of S_EE
-Fr_NoFix = zeros(2,length(S_EItest),length(S_IEtest),length(S_Ilgntest),length(rI_L6test));
-mV_NoFix = zeros(2,length(S_EItest),length(S_IEtest),length(S_Ilgntest),length(rI_L6test));
-Fr_NoFixVar = zeros(2,length(S_EItest),length(S_IEtest),length(S_Ilgntest),length(rI_L6test));
-mV_NoFixVar = zeros(2,length(S_EItest),length(S_IEtest),length(S_Ilgntest),length(rI_L6test));
-Fr_NoFixTraj = cell(length(S_EItest),length(S_IEtest),length(S_Ilgntest),length(rI_L6test));
-mV_NoFixTraj = cell(length(S_EItest),length(S_IEtest),length(S_Ilgntest),length(rI_L6test));
+Fr_NoFix = zeros(2,length(S_EItest),length(S_IEtest) );
+mV_NoFix = zeros(2,length(S_EItest),length(S_IEtest) );
+Fr_NoFixVar = zeros(2,length(S_EItest),length(S_IEtest) );
+mV_NoFixVar = zeros(2,length(S_EItest),length(S_IEtest) );
+Fr_NoFixTraj = cell(length(S_EItest),length(S_IEtest) );
+mV_NoFixTraj = cell(length(S_EItest),length(S_IEtest) );
 
-loopCount = zeros(length(S_EItest),length(S_IEtest),length(S_Ilgntest),length(rI_L6test)); % count the number of loops
+loopCount = zeros(length(S_EItest),length(S_IEtest) ); % count the number of loops
 ConvIndi = logical(loopCount); % converged or not
 FailIndi = zeros(size(loopCount));
 
@@ -124,62 +133,61 @@ StopNum = 300;
 h = 1;
 SimuT = 20*1e3;
 aa = floor(length(S_IEtest)); % Matlab always fail to directly see this as a whole number!!!
-bb = floor(length(S_EItest));
+%bb = floor(length(S_EItest));
+
 tic
 
-for PanelInd = 1:PanelNum1*PanelNum2
-    S_IlgnInd = ceil(PanelInd/PanelNum2);
-    rI_L6Ind  = mod(PanelInd,PanelNum2);
-    rI_L6Ind(rI_L6Ind==0) = PanelNum2;
+S_IlgnInd = ceil(PanelInd/PanelNum2);
+rI_L6Ind  = mod(PanelInd,PanelNum2);
+rI_L6Ind(rI_L6Ind==0) = PanelNum2;
+
+S_Ilgn = S_Ilgntest(S_IlgnInd);
+rI_L6 = rI_L6test(rI_L6Ind);
+
+
+parfor S_EIInd = 1:length(S_EItest)
+    S_EI = S_EItest(S_EIInd);
     
-    S_Ilgn = S_Ilgntest(S_IlgnInd);
-    rI_L6 = rI_L6test(rI_L6Ind);
     
-    
-    parfor S_EIInd = 1:length(S_EItest)
-        S_EI = S_EItest(S_EIInd);
-        
-        
-        for S_IEInd = 1:aa
-            S_IE  = S_IEtest(S_IEInd);
-            S_IL6 = S_IL6test(S_IEInd);
-            %cut some redundant regime out of our interest
-            if (S_EI/S_EE<=S_IE/S_II*LineL1(1)+LineL1(2) || S_EI/S_EE<=S_IE/S_II*LineL2(1)+LineL2(2) )
-                disp(['S_IE = ' num2str(S_IE/S_II,'%.3f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.3f') '*S_EE; Fr may be too high, break...'])
-                continue
-            end
-            if (S_EI/S_EE>=S_IE/S_II*LineU1(1)+LineU1(2) )
-                disp(['S_IE = ' num2str(S_IE/S_II,'%.3f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.3f') '*S_EE; Fr may be too low, break...'])
-                continue
-            end
-            
-            tic
-            [Fr_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind},mV_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind},...
-                loopCount(S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind),   ConvIndi(S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind), ...
-                FailIndi(S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind)]...
-                = MeanFieldEst_BkGd_Indep_StepSize_ref_testL6(C_EE,C_EI,C_IE,C_II,...
-                S_EE,S_EI,S_IE,S_II,p_EEFail,...
-                lambda_E,S_Elgn,rE_amb,S_amb,...
-                lambda_I,S_Ilgn,rI_amb,...
-                S_EL6,S_IL6,rE_L6,rI_L6,...
-                tau_ampa_R,tau_ampa_D,tau_nmda_R,tau_nmda_D,tau_gaba_R,tau_gaba_D,tau_ref,...
-                rhoE_ampa,rhoE_nmda,rhoI_ampa,rhoI_nmda,...
-                gL_E,gL_I,Ve,Vi,...
-                N_HC,n_E_HC,n_I_HC,'End',SampleNum,StopNum,h,SimuT);
-            
-            toc
+    for S_IEInd = 1:aa
+        S_IE  = S_IEtest(S_IEInd);
+        S_IL6 = S_IL6test(S_IEInd);
+        %cut some redundant regime out of our interest
+        if (S_EI/S_EE<=S_IE/S_II*LineL1(1)+LineL1(2) || S_EI/S_EE<=S_IE/S_II*LineL2(1)+LineL2(2) )
+            disp(['S_IE = ' num2str(S_IE/S_II,'%.3f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.3f') '*S_EE; Fr may be too high, break...'])
+            continue
         end
+        if (S_EI/S_EE>=S_IE/S_II*LineU1(1)+LineU1(2) )
+            disp(['S_IE = ' num2str(S_IE/S_II,'%.3f') '*S_II, S_EI = ' num2str(S_EI/S_EE,'%.3f') '*S_EE; Fr may be too low, break...'])
+            continue
+        end
+        
+        tic
+        [Fr_NoFixTraj{S_EIInd,S_IEInd },mV_NoFixTraj{S_EIInd,S_IEInd },...
+            loopCount(S_EIInd,S_IEInd ),   ConvIndi(S_EIInd,S_IEInd ), ...
+            FailIndi(S_EIInd,S_IEInd )]...
+            = MeanFieldEst_BkGd_Indep_StepSize_ref_testL6(C_EE,C_EI,C_IE,C_II,...
+            S_EE,S_EI,S_IE,S_II,p_EEFail,...
+            lambda_E,S_Elgn,rE_amb,S_amb,...
+            lambda_I,S_Ilgn,rI_amb,...
+            S_EL6,S_IL6,rE_L6,rI_L6,...
+            tau_ampa_R,tau_ampa_D,tau_nmda_R,tau_nmda_D,tau_gaba_R,tau_gaba_D,tau_ref,...
+            rhoE_ampa,rhoE_nmda,rhoI_ampa,rhoI_nmda,...
+            gL_E,gL_I,Ve,Vi,...
+            N_HC,n_E_HC,n_I_HC,'End',SampleNum,StopNum,h,SimuT);
+        
+        toc
     end
 end
 toc
 
-for PanelInd = 1:PanelNum1*PanelNum2
-    S_IlgnInd = ceil(PanelInd/PanelNum2);
-    rI_L6Ind  = mod(PanelInd,PanelNum2);
-    rI_L6Ind(rI_L6Ind==0) = PanelNum2;
+% for PanelInd = 1:PanelNum1*PanelNum2
+%     S_IlgnInd = ceil(PanelInd/PanelNum2);
+%     rI_L6Ind  = mod(PanelInd,PanelNum2);
+%     rI_L6Ind(rI_L6Ind==0) = PanelNum2;
     
-    S_Ilgn = S_Ilgntest(S_IlgnInd);
-    rI_L6 = rI_L6test(rI_L6Ind);
+%     S_Ilgn = S_Ilgntest(S_IlgnInd);
+%     rI_L6 = rI_L6test(rI_L6Ind);
     for S_EIInd = 1:length(S_EItest)
         S_EI = S_EItest(S_EIInd);
         
@@ -198,19 +206,19 @@ for PanelInd = 1:PanelNum1*PanelNum2
                 %break...'])
                 continue
             end
-            Fr_NoFix(:,S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind) = mean(Fr_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind}(:,end-SampleNum+1:end),2);
-            mV_NoFix(:,S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind) = mean(mV_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind}(:,end-SampleNum:end),2);
-            Fr_NoFixVar(:,S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind) = var(Fr_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind}(:,end-SampleNum:end),0,2);
-            mV_NoFixVar(:,S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind) = var(mV_NoFixTraj{S_EIInd,S_IEInd,S_IlgnInd,rI_L6Ind}(:,end-SampleNum:end),0,2);
+            Fr_NoFix(:,S_EIInd,S_IEInd ) = mean(Fr_NoFixTraj{S_EIInd,S_IEInd }(:,end-SampleNum+1:end),2);
+            mV_NoFix(:,S_EIInd,S_IEInd ) = mean(mV_NoFixTraj{S_EIInd,S_IEInd }(:,end-SampleNum:end),2);
+            Fr_NoFixVar(:,S_EIInd,S_IEInd ) = var(Fr_NoFixTraj{S_EIInd,S_IEInd }(:,end-SampleNum:end),0,2);
+            mV_NoFixVar(:,S_EIInd,S_IEInd ) = var(mV_NoFixTraj{S_EIInd,S_IEInd }(:,end-SampleNum:end),0,2);
         end
     end
-end
+%end
 % save data
 %Trajs = struct('Fr_NoFixTraj', Fr_NoFixTraj, 'mV_NoFixTraj',mV_NoFixTraj);
 ContourData_7D = ws2struct();
 % add important info to the end of filename
-CommentString = ['_7D_HHigherRes_S_L6Modfd1'];
-save(['ContourData_S_EE=' num2str(S_EE) CommentString '.mat'],'ContourData_7D')
+CommentString = sprintf('_7D_HPC_PX%d_PY%d',S_IlgnInd,rI_L6Ind);
+save([pwd '/HPCData/ContourData_S_EE=' num2str(S_EE) CommentString '.mat'],'ContourData_7D')
 %% Contour maps
 % Fr_Plot = Fr_NoFix; S_IEBound = 8e-3; % DeleteInd =
 % false(size(Fr_Plot));SampleProp % DeleteInd(:,:,S_IEtest<S_IEBound) =
@@ -249,3 +257,4 @@ save(['ContourData_S_EE=' num2str(S_EE) CommentString '.mat'],'ContourData_7D')
 %
 % saveas(h,fullfile(FigurePath, ['ContourFigs - S_EE=' num2str(S_EE)
 % CommentString]),'fig')
+end
