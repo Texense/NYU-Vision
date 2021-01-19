@@ -1,7 +1,9 @@
 %% Script for HPC:
 % Fix S_EE, Run for different S_ILGN and r_IL6, each for one panel
 % PanelInd: 1~PanelNum1*PanelNum2
-function [] = MF_7DContour_HPC(PanelInd,PanelNum1,PanelNum2)
+% S_ElgnInd: Determine S_Elgn. Now should be 1,2,3
+function [] = MF_7DContour_HPC(PanelInd,PanelNum1,PanelNum2,...
+                               S_ElgnInd)
 if PanelInd>PanelNum1*PanelNum2
     disp('Illigal panel ind')
     return
@@ -73,7 +75,7 @@ tau_nmda_R = 2; tau_nmda_D = 80;
 tau_gaba_R = 0.5; tau_gaba_D = 5;
 tau_ref = 2; % time unit is ms
 %dt = 0.2;
-gL_E = 1/20;  Ve = 14/3; S_Elgn = 2*S_EE; rhoE_ampa = 0.8; rhoE_nmda = 0.2;
+gL_E = 1/20;  Ve = 14/3;  rhoE_ampa = 0.8; rhoE_nmda = 0.2; %S_Elgn = 2*S_EE;
 gL_I = 1/15;  Vi = -2/3; %S_Ilgn = 0.084;
 rhoI_ampa = 0.67;rhoI_nmda = 0.33;
 
@@ -95,6 +97,10 @@ S_EItest = linspace(S_EI_Mtp(1),S_EI_Mtp(2),GridNum1)*S_EE;
 S_IEtest = linspace(S_IE_Mtp(1),S_IE_Mtp(2),GridNum2)*S_II;%*S_EE; I only specify a vecter length here
 
 S_IL6test = 1/3 * S_IEtest;
+% First determine S_Elgn
+S_Elgntest = [1.5 2 2.5]*S_EE;
+S_Elgn = S_Elgntest(S_ElgnInd);
+
 % Panel: Two proportions
 % PanelNum1 = 4; %4
 % PanelNum2 = 5; %5
@@ -217,8 +223,8 @@ toc
 %Trajs = struct('Fr_NoFixTraj', Fr_NoFixTraj, 'mV_NoFixTraj',mV_NoFixTraj);
 ContourData_7D = ws2struct();
 % add important info to the end of filename
-CommentString = sprintf('_7D_HPC_PX%d_PY%d',S_IlgnInd,rI_L6Ind);
-save([pwd '/HPCData/ContourData_S_EE=' num2str(S_EE) CommentString '.mat'],'ContourData_7D')
+CommentString = sprintf('_S_EE=%.3f_S_Elgn=%.3f_7D_HPC_PX%d_PY%d',S_EE,S_Elgn,S_IlgnInd,rI_L6Ind);
+save([pwd '/HPCData/ContourData' CommentString '.mat'],'ContourData_7D')
 %% Contour maps
 % Fr_Plot = Fr_NoFix; S_IEBound = 8e-3; % DeleteInd =
 % false(size(Fr_Plot));SampleProp % DeleteInd(:,:,S_IEtest<S_IEBound) =
