@@ -2,7 +2,7 @@
 % Fix S_EE, Run for different S_ILGN and r_IL6, each for one panel
 % PanelInd: 1~PanelNum1*PanelNum2
 % S_ElgnInd: Determine S_Elgn. Now should be 1,2,3
-function [] = MF_7DContour_HPC(PanelInd,PanelNum1,PanelNum2,...
+function [] = MF_7DHPC_Contour_SIlgn_rIl6(PanelInd,PanelNum1,PanelNum2,...
                                S_ElgnInd)
 if PanelInd>PanelNum1*PanelNum2
     disp('Illigal panel ind')

@@ -1,4 +1,4 @@
-function [] = MF_7D_NWValidation(S_ElgnInd,PanelInd)
+function [] = MF_7DHPC_NWValidation_SIlgn_rIl6(S_ElgnInd,PanelInd)
 
 CurrentFolder = pwd;
 %FigurePath = [CurrentFolder '/Figures'];
@@ -177,7 +177,7 @@ T = 3000; SimulationT = 1000;
 % Setup Results Recording
 Fr_NW      = zeros(2,EITestN,length(S_IEtest));
 mV_NW      = zeros(2,EITestN,length(S_IEtest));
-Fr_OneStep = zeros(2,EITestN,length(S_IEtest)); % one step MF estimation using network mV
+%Fr_OneStep = zeros(2,EITestN,length(S_IEtest)); % one step MF estimation using network mV
 NWTraceAll = cell(EITestN,length(S_IEtest));
 
 % Compute Neuron Ind
@@ -189,8 +189,8 @@ I_sideInd = floor(1*n_I_HC+1):2*n_I_HC;
 [I_Ind_X,I_Ind_Y] = meshgrid(I_sideInd,I_sideInd);
 I_Ind = (reshape(I_Ind_X,size(I_Ind_X,1)*size(I_Ind_X,2),1)-1)*n_I_HC*N_HC + reshape(I_Ind_Y,size(I_Ind_X,1)*size(I_Ind_X,2),1);
 
-N_EE = mean(sum(C_EE(E_Ind,:),2)); N_EI = mean(sum(C_EI(E_Ind,:),2));
-N_IE = mean(sum(C_IE(I_Ind,:),2)); N_II = mean(sum(C_II(I_Ind,:),2));
+% N_EE = mean(sum(C_EE(E_Ind,:),2)); N_EI = mean(sum(C_EI(E_Ind,:),2));
+% N_IE = mean(sum(C_IE(I_Ind,:),2)); N_II = mean(sum(C_II(I_Ind,:),2));
 
 
 sampleT = 20;
@@ -214,7 +214,7 @@ parfor S_IEInd = 1:length(S_IEtest)
     S_IL6 = S_IL6test(S_IEInd);
     S_EItestNow = S_EItest(S_IEInd,:);
     BlowUp = false;
-    for S_EIInd = length(S_EItestNow):-1:1
+    for S_EIInd = EITestN:-1:1
         S_EI = S_EItestNow(S_EIInd);
         
         if BlowUp
@@ -275,26 +275,26 @@ parfor S_IEInd = 1:length(S_IEtest)
                     'S_amb = ' num2str(S_amb) ', rE_amb = ' num2str(rE_amb) ', rI_amb = ' num2str(rI_amb)];
                 
                 fprintf(ParameterDisp)
-                h = figure('Name','TestRaster');
-                subplot 311
-                hist(oVE,-0.3:0.02:1)
-                title(['mVE = ' num2str(nanmean(VE_T))])
-                %E_SpHis = [E_SpHis,sum(oSpE)];
-                %axis([-0.4 1.1 0 6000])
-                
-                subplot 312
-                hist(oVI,-0.3:0.02:1)
-                title(['mVI = ' num2str(nanmean(VI_T))])
+%                 h = figure('Name','TestRaster');
+%                 subplot 311
+%                 hist(oVE,-0.3:0.02:1)
+%                 title(['mVE = ' num2str(nanmean(VE_T))])
+%                 %E_SpHis = [E_SpHis,sum(oSpE)];
+%                 %axis([-0.4 1.1 0 6000])
+%                 
+%                 subplot 312
+%                 hist(oVI,-0.3:0.02:1)
+%                 title(['mVI = ' num2str(nanmean(VI_T))])
                 %I_SpHis = [I_SpHis,sum(oSpI)];
                 %axis([-0.4 1.1 0 2000])
                 
                 
                 
                 %E_Ind = 10000:13000; I_Ind = 3300:4300;
-                scatterE = find(ismember(E_Sp(:,1),E_Ind));
-                scatterI = find(ismember(I_Sp(:,1),I_Ind));
-                [~,E_Fire_Ind] = ismember(E_Sp(scatterE,1),E_Ind);
-                [~,I_Fire_Ind] = ismember(I_Sp(scatterI,1),I_Ind);
+%                 scatterE = find(ismember(E_Sp(:,1),E_Ind));
+%                 scatterI = find(ismember(I_Sp(:,1),I_Ind));
+%                 [~,E_Fire_Ind] = ismember(E_Sp(scatterE,1),E_Ind);
+%                 [~,I_Fire_Ind] = ismember(I_Sp(scatterI,1),I_Ind);
                 
                 WinSize = SimulationT;
                 T_RateWindow = [TimeN*dt-WinSize TimeN*dt];
@@ -303,25 +303,25 @@ parfor S_IEInd = 1:length(S_IEtest)
                 E_Rate = length(E_SpInd)/(WinSize/1000)/length(E_Ind);
                 I_Rate = length(I_SpInd)/(WinSize/1000)/length(I_Ind);
                 
-                f_EnIOneStep = MeanFieldEst_BkGd_L6_OneStep(N_EE,N_EI,N_IE,N_II,...
-                    S_EE,S_EI,S_IE,S_II,p_EEFail,...
-                    lambda_E,S_Elgn,rE_amb,S_amb,...
-                    lambda_I,S_Ilgn,rI_amb,...
-                    S_EL6,S_IL6,rE_L6,rI_L6,...
-                    gL_E,gL_I,Ve,Vi,nanmean(VE_T),nanmean(VI_T));
-                
-                subplot 313
-                hold on
-                scatter(E_Sp(scatterE,2),E_Fire_Ind,'r.')
-                scatter(I_Sp(scatterI,2),I_Fire_Ind+max(E_Fire_Ind),'b.');
-                title({['E-rate = ' num2str(E_Rate) ' est:' num2str(f_EnIOneStep(1))],['I-rate = ' num2str(I_Rate) ' est:' num2str(f_EnIOneStep(2))]})
-                xlabel('Time (ms)')
-                xlim(T_RateWindow)
-                ylim([0 max(I_Fire_Ind)+max(E_Fire_Ind)])
-                drawnow
-                %pause
-                close(h)
-                % end of 500ms plot
+%                 f_EnIOneStep = MeanFieldEst_BkGd_L6_OneStep(N_EE,N_EI,N_IE,N_II,...
+%                     S_EE,S_EI,S_IE,S_II,p_EEFail,...
+%                     lambda_E,S_Elgn,rE_amb,S_amb,...
+%                     lambda_I,S_Ilgn,rI_amb,...
+%                     S_EL6,S_IL6,rE_L6,rI_L6,...
+%                     gL_E,gL_I,Ve,Vi,nanmean(VE_T),nanmean(VI_T));
+%                 
+%                 subplot 313
+%                 hold on
+%                 scatter(E_Sp(scatterE,2),E_Fire_Ind,'r.')
+%                 scatter(I_Sp(scatterI,2),I_Fire_Ind+max(E_Fire_Ind),'b.');
+%                 title({['E-rate = ' num2str(E_Rate) ' est:' num2str(f_EnIOneStep(1))],['I-rate = ' num2str(I_Rate) ' est:' num2str(f_EnIOneStep(2))]})
+%                 xlabel('Time (ms)')
+%                 xlim(T_RateWindow)
+%                 ylim([0 max(I_Fire_Ind)+max(E_Fire_Ind)])
+%                 drawnow
+%                 %pause
+%                 close(h)
+%                 % end of 500ms plot
             end
             
             % every 20ms time window
@@ -365,7 +365,7 @@ parfor S_IEInd = 1:length(S_IEtest)
         else
             Fr_NW(:,S_EIInd,S_IEInd)      = [E_Rate;I_Rate];
             mV_NW(:,S_EIInd,S_IEInd)      = [nanmean(VE_T),nanmean(VI_T)];
-            Fr_OneStep(:,S_EIInd,S_IEInd) = f_EnIOneStep;
+            %Fr_OneStep(:,S_EIInd,S_IEInd) = f_EnIOneStep;
         end
         % end of S_IE loop
     end
