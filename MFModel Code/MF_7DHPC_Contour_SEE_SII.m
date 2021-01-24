@@ -58,7 +58,7 @@ C_II = ConnectionMat(N_I,NnI,Size_I,...
 %zeros(N_I,1); GI_nmda_D = zeros(N_I,1); GI_gaba_D = zeros(N_I,1);
 %load('Initials.mat')
 %parameters
-S_EEtest = [0.028 0.024 0.028]; 
+S_EEtest = [0.020 0.024 0.028]; 
 S_IItest = [0.06  0.09  0.12  0.15  0.18];
 S_EE = S_EEtest(S_EEInd);
 S_II = S_IItest(S_IIInd);
