@@ -2,6 +2,8 @@
 % Fix S_EE, Run for different S_ILGN and r_IL6, each for one panel
 % PanelInd: 1~PanelNum1*PanelNum2
 % S_ElgnInd: Determine S_Elgn. Now should be 1,2,3
+% S_IlgnInd:
+% rI_L6Ind: 1:5, but adding 4.5 at last
 function [] = MF_7DHPC_Contour_SEE_SII(S_ElgnInd,S_IlgnInd,rI_L6Ind,...
                                        S_EEInd,S_IIInd)
 %% A Rough Estimation Contour for S_EI and S_IE
@@ -101,7 +103,8 @@ PanelNum2 = 5; %5
 S_Ilgn_Mtp = [1  2.5]; % of S_Elgn
 rI_L6_Mtp  = [1  5]; % of rE_L6
 S_Ilgntest = linspace(S_Ilgn_Mtp(1),S_Ilgn_Mtp(2),PanelNum1)*S_Elgn;
-rI_L6test = linspace(rI_L6_Mtp(1),rI_L6_Mtp(2),   PanelNum2)*rE_L6;
+rI_L6test  = linspace(rI_L6_Mtp(1),rI_L6_Mtp(2),  PanelNum2)*rE_L6;
+rI_L6test = [rI_L6test, 4.5*rE_L6];
 
 S_Ilgn = S_Ilgntest(S_IlgnInd);
 rI_L6 = rI_L6test(rI_L6Ind);
