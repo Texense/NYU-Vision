@@ -227,8 +227,9 @@ VecInput = [(Ve-mVE) * (lambda_E*S_Elgn + rE_amb*S_amb + rE_L6*S_EL6);
             (Ve-mVI) * (lambda_I*S_Ilgn + rI_amb*S_amb + rI_L6*S_IL6)]*1000;
 Leak = -[gL_E*mVE;
         gL_I*mVI]*1000; % leak has opposite signs of mean Vs
-    
-f_EnI = -(MatEI-eye(2))^-1*(Leak+VecInput).*ref_fac;
+
+f_EnI = -(MatEI-eye(2))^-1*((Leak+VecInput).*ref_fac);    
+%f_EnI = -(ref_fac*MatEI-eye(2))^-1*ref_fac*(Leak+VecInput);
 
 end
 
@@ -367,6 +368,6 @@ for tInd = 1:length(t)-1
      G_nmda_R(tInd+1) = (G_nmda_R(tInd) +                                           S_E*Sp_EV1(tInd)*rho_nmda + S_L6*Sp_L6(tInd)*rho_nmda) * exp(-dt/tau_nmda_R);
      G_nmda_D(tInd+1) = (G_nmda_D(tInd) +                                           S_E*Sp_EV1(tInd)*rho_nmda + S_L6*Sp_L6(tInd)*rho_nmda) * exp(-dt/tau_nmda_D);
 end
-meanV = nanmean(v(floor(end*(1-SampleProp)):end));
+meanV = mean(v(floor(end*(1-SampleProp)):end), 'omitnan');
 fr = length(find(spike>(1-SampleProp)*T))/(T*SampleProp/1000);
 end

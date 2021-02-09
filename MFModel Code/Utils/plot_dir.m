@@ -28,4 +28,4 @@ vPy = (vYQ1 - vYQ0) * rMag;
 h1 = plot (vX, vY, '.k-'); hold on;
 % add arrows 
 h2 = quiver (vXQ0,vYQ0, vPx, vPy, 0, 'r'); grid on; hold off
-axis equal
+%axis equal

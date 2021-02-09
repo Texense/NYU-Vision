@@ -130,7 +130,7 @@ mV_NoFixTraj_ref = cell(EITestN,length(S_IEtest));
 
 loopCount_ref = zeros(EITestN,length(S_IEtest)); % count the number of loops
 ConvIndi_ref = logical(loopCount_ref);
-FailureIndicate = logical(loopCount_ref);
+FailureIndicate = logical(loopCount_ref);oEEDlyRcd
 
 SampleNum = 100;
 MaxNum = 500;
