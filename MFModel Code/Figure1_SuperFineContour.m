@@ -4,8 +4,13 @@
 % S_ElgnInd: Determine S_Elgn. Now should be 1,2,3
 % S_IlgnInd:
 % rI_L6Ind: 1:5, but adding 4.5 at last
-function [] = MF_7DHPC_Contour_SEE_SII(S_ElgnInd,S_IlgnInd,rI_L6Ind,...
-                                       S_EEInd,S_IIInd)
+%% Inds
+S_EEInd = 3;
+S_IIInd = 3;
+S_ElgnInd = 3;
+S_IlgnInd = 3;
+rI_L6Ind = 3;
+
 %% A Rough Estimation Contour for S_EI and S_IE
 % first, setup connctivity map
 CurrentFolder = pwd;
@@ -85,8 +90,8 @@ S_EL6 = 1/3*S_EE; % S_IL6 = 1/3*S_IEOneTime; Now S_IL6 is porp to S_IE
 rE_L6 = 0.25; % rI_L6 to be determined
 
 % Replace S_EI by testing values
-GridNum1 = 160; %160
-GridNum2 = 160; %160
+GridNum1 = 160*3; %160
+GridNum2 = 160*3; %160
 S_EI_Mtp = [0.8, 2.2]; % of S_EE
 S_IE_Mtp = [0.1, 0.27]; % of S_II
 S_EItest = linspace(S_EI_Mtp(1),S_EI_Mtp(2),GridNum1)*S_EE;
@@ -112,7 +117,7 @@ rI_L6 = rI_L6test(rI_L6Ind);
 % Add lines boundaries
 LineL1 = polyfit([0.1  0.2 ],[0.9 0.8],1); % S_IEMtp first, second S_EIMtp. Those numbers are multipliers of S_II and S_EE
 LineL2 = polyfit([0.06 0.28],[0.9 0.4],1);
-LineU1 = polyfit([0.1  0.3 ],[2.5 2  ],1); % LineU1 = polyfit([0.1  0.3 ],[2.5 0.8],1);
+LineU1 = polyfit([0.1  0.3 ],[2.5 2.2 ],1); % LineU1 = polyfit([0.1  0.3 ],[2.5 0.8],1);
 
 % creat a 10-hr parallel
 % cluster = gcp('nocreate');
@@ -120,7 +125,7 @@ LineU1 = polyfit([0.1  0.3 ],[2.5 2  ],1); % LineU1 = polyfit([0.1  0.3 ],[2.5 0
 %     cluster = parpool([4 64]);
 % %    cluster.IdleTimeout = 1200;
 % end
-cluster = parpool([4 64]);
+cluster = parpool([4 128]);
 %% MF estimation:
 %SBound = 3.3; % multipliers of S_EE
 Fr_NoFix = zeros(2,length(S_EItest),length(S_IEtest) );
@@ -220,7 +225,7 @@ toc
 ContourData_7D = ws2struct();
 % add important info to the end of filename
 CommentString = sprintf('_S_EE=%.3f_S_II=%.2f_S_Elgn=%.3f_7D_HPC_S_IlgnInd%d_rI_L6Ind%d',S_EE,S_II,S_Elgn,S_IlgnInd,rI_L6Ind);
-save([pwd '/HPCData/ContourData' CommentString '.mat'],'ContourData_7D')
+save([pwd '/HPCData/Figure1_Data' CommentString '.mat'],'ContourData_7D')
 %% Contour maps
 % Fr_Plot = Fr_NoFix; S_IEBound = 8e-3; % DeleteInd =
 % false(size(Fr_Plot));SampleProp % DeleteInd(:,:,S_IEtest<S_IEBound) =
@@ -259,4 +264,3 @@ save([pwd '/HPCData/ContourData' CommentString '.mat'],'ContourData_7D')
 %
 % saveas(h,fullfile(FigurePath, ['ContourFigs - S_EE=' num2str(S_EE)
 % CommentString]),'fig')
-end
