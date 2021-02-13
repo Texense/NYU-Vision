@@ -1,3 +1,4 @@
+%% Figure1: Super fine contours HPC
 %% Script for HPC:
 % Fix S_EE, Run for different S_ILGN and r_IL6, each for one panel
 % PanelInd: 1~PanelNum1*PanelNum2
@@ -5,7 +6,7 @@
 % S_IlgnInd:
 % rI_L6Ind: 1:5, but adding 4.5 at last
 %% Inds
-S_EEInd = 3;
+S_EEInd = 2;
 S_IIInd = 3;
 S_ElgnInd = 3;
 S_IlgnInd = 3;
@@ -90,8 +91,8 @@ S_EL6 = 1/3*S_EE; % S_IL6 = 1/3*S_IEOneTime; Now S_IL6 is porp to S_IE
 rE_L6 = 0.25; % rI_L6 to be determined
 
 % Replace S_EI by testing values
-GridNum1 = 160*3; %160
-GridNum2 = 160*3; %160
+GridNum1 = 160*2; %160
+GridNum2 = 160*2; %160
 S_EI_Mtp = [0.8, 2.2]; % of S_EE
 S_IE_Mtp = [0.1, 0.27]; % of S_II
 S_EItest = linspace(S_EI_Mtp(1),S_EI_Mtp(2),GridNum1)*S_EE;
@@ -139,10 +140,10 @@ loopCount = zeros(length(S_EItest),length(S_IEtest) ); % count the number of loo
 ConvIndi = logical(loopCount); % converged or not
 FailIndi = zeros(size(loopCount));
 
-SampleNum = 50;
-StopNum = 300;
+SampleNum = 100;
+StopNum = 400;
 h = 1;
-SimuT = 20*1e3;
+SimuT = 40*1e3;
 aa = floor(length(S_IEtest)); % Matlab always fail to directly see this as a whole number!!!
 %bb = floor(length(S_EItest));
 
