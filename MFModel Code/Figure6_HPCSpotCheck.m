@@ -1,14 +1,50 @@
-function [] = MF_7DHPC_NWValidation_SEE_SII(S_ElgnInd,S_IlgnInd,rI_L6Ind,...
-                                       S_EEInd,S_IIInd)
+%% Figure 6: Checking Firing rates with Network
+% Idea: Read the MF+LIF figure data file and compute the extended good
+% areas. If too small, then skip. Otherwise select a 10-point column to see
+% if it works.
 
+% S_EEtest = [0.018 0.021 0.024 0.027 0.030];
+% S_IItest = [0.08  0.12  0.16  0.20];
+% S_Elgntest = [1.5 2 2.5 3.0]*S_EE;
+% S_Ilgn_Mtp = [1.5 2 2.5 3]; % of S_Elgn
+% rI_L6_Mtp  = [1.5 3 4.5 6]; % of rE_L6
+function [] = Figure6_HPCSpotCheck(S_ElgnInd,S_IlgnInd,rI_L6Ind,...
+                                         S_EEInd,S_IIInd)                                   
 CurrentFolder = pwd;
 %FigurePath = [CurrentFolder '/Figures'];
 addpath(CurrentFolder)
 addpath([CurrentFolder '/Utils'])
 addpath([CurrentFolder '/Data'])
+addpath([CurrentFolder '/HPCData'])
+%% load MF+LIF data to see if it worth checking
+S_EEtest = [0.018 0.021 0.024 0.027 0.030]; 
+S_IItest = [0.08  0.12  0.16  0.20];
+S_EE = S_EEtest(S_EEInd);
+S_II = S_IItest(S_IIInd);
 
-% load('ContourData_S_EE=0.024_7D_HHigherRes_S_L6Modfd1.mat','ContourData_7D')
+% load data
+CurrentPanelFile = sprintf('FigContourL_S_EE=%.3f_S_II=%.2f_S_ElgnInd=%d_S_IlgnInd%d_rI_L6Ind%d.mat',...
+                                        S_EE,     S_II,     S_ElgnInd,   S_IlgnInd,  rI_L6Ind);
+if isfile([CurrentFolder '/HPCData/' CurrentPanelFile])
+    load(sprintf('FigContourL_S_EE=%.3f_S_II=%.2f_S_ElgnInd=%d_S_IlgnInd%d_rI_L6Ind%d.mat',...
+                              S_EE,     S_II,     S_ElgnInd,   S_IlgnInd,  rI_L6Ind),'ContourData_7D')
+else
+    disp('Warning! MF+LIF file does not exist!!!')
+    return
+end
+% Check the EXTENDED good area. Bound: 0.037/1
+CurrentFrE = squeeze(ContourData_7D.Fr_NoFix(1,:,: )); %CurrentFrE(CurrentFrE<eps) = nan;
+CurrentFrE(CurrentFrE<=0) = 0;
+CurrentFrI = squeeze(ContourData_7D.Fr_NoFix(2,:,: ));
+EtdGoodArea = (CurrentFrE>=2                 & CurrentFrE<=6 & ...
+               CurrentFrI./CurrentFrE    >=3 & CurrentFrI./CurrentFrE    <=4.5); 
+EGAratio = sum(double(EtdGoodArea),'all')/(length(CurrentFrE(:)));
+if EGAratio<0.03
+    disp('Extended Good Area too small, Exit.')
+    return
+end
 
+% Now we start Normal setup process
 N_HC = 3;
 % Number of E and I neurons
 n_E_HC = 54; n_I_HC = 31; % per side of HC
@@ -31,95 +67,81 @@ Peak_EE = 0.15; Peak_I = 0.6;
 % sparse metrices containing 0 or 1.
 % Row_i Column_j means neuron j projects to neuron i
 % add periodic boundary
-C_EE = ConnectionMat(N_E,NnE,Size_E,...currentVec(2)^2
-    N_E,NnE,Size_E,...
-    Peak_EE,SD_E,Dist_LB,1);
+C_EE = ContourData_7D.C_EE;
 
-C_EI = ConnectionMat(N_E,NnE,Size_E,...
-    N_I,NnI,Size_I,...
-    Peak_I,SD_I,Dist_LB,0);
+C_EI = ContourData_7D.C_EI;
 
-C_IE = ConnectionMat(N_I,NnI,Size_I,...
-    N_E,NnE,Size_E,...
-    Peak_I,SD_E,Dist_LB,0);
+C_IE = ContourData_7D.C_IE;
 
-C_II = ConnectionMat(N_I,NnI,Size_I,...
-    N_I,NnI,Size_I,...
-    Peak_I,SD_I,Dist_LB,1);
+C_II = ContourData_7D.C_II;
 
-
+clear ContourData_7D
 %% Set up Network Simulation
 %RefTimeE = zeros(N_E,1); VE = 0.5*rand(N_E,1)-0.5; SpE = sparse(N_E,1); GE_ampa_R = zeros(N_E,1); GE_nmda_R = zeros(N_E,1); GE_gaba_R = zeros(N_E,1); GE_ampa_D = zeros(N_E,1); GE_nmda_D = zeros(N_E,1); GE_gaba_D = zeros(N_E,1);
 %RefTimeI = zeros(N_I,1); VI = 1.5*rand(N_I,1)-0.5; SpI = sparse(N_I,1); GI_ampa_R = zeros(N_I,1); GI_nmda_R = zeros(N_I,1); GI_gaba_R = zeros(N_I,1); GI_ampa_D = zeros(N_I,1); GI_nmda_D = zeros(N_I,1); GI_gaba_D = zeros(N_I,1);
 % load('Initials.mat')
 %parameters
-S_EEtest = [0.020 0.024 0.028]; 
-S_IItest = [0.06  0.09  0.12  0.15  0.18];
-S_EE = S_EEtest(S_EEInd);
-S_II = S_IItest(S_IIInd);
-p_EEFail = 0.2; S_amb = 0.01;
+% S_EEtest = [0.018 0.021 0.024 0.027 0.030]; 
+% S_IItest = [0.08  0.12  0.16  0.20];
+% S_EE = S_EEtest(S_EEInd);
+% S_II = S_IItest(S_IIInd);
 
+p_EEFail = 0.2; S_amb = 0.01;
 tau_ampa_R = 0.5; tau_ampa_D = 3;
 tau_nmda_R = 2; tau_nmda_D = 80;
 tau_gaba_R = 0.5; tau_gaba_D = 5;
 tau_ref = 2; % time unit is ms
-dt = 0.1;
-gL_E = 1/20;  Ve = 14/3; %S_Elgn = ContourData_7D.S_Elgn;
-rhoE_ampa = 0.8; rhoE_nmda = 0.2;
-gL_I = 1/15;  Vi = -2/3; %S_Ilgn = S_Ilgnnow;
+dt = 0.05;
+gL_E = 1/20;  Ve = 14/3;  rhoE_ampa = 0.8; rhoE_nmda = 0.2; %S_Elgn = 2*S_EE;
+gL_I = 1/15;  Vi = -2/3; %S_Ilgn = 0.084;
 rhoI_ampa = 0.67;rhoI_nmda = 0.33;
-
-% LGN input
 lambda_E = 0.08; % ~16 LGN spike can excite a E neurons. 0.25 spike/ms makes 64 ms for such period.
 lambda_I = 0.08;
-
-% Check amb. That's for differnet figures
+%rE_amb = 0.72; rI_amb = 0.36;
 rE_amb = 0.50; rI_amb = 0.50;
-% L6 input
-S_EL6 = 1/3*S_EE; rE_L6 = 0.25;
-%S_IL6 = ContourData_7D.S_IL6;
-%rI_L6 = rI_L6now; %250hz for now
-
-% Length of the interval %% Replace S_EI by testing values
-EITestN = 20;
-%EITestN1 = 4;
-%S_IEtest = [0.14,0.19]*S_II;
-S_IEtest = [0.13 0.15, 0.175]*S_II; % 0.15 0.20
-S_IL6test =  1/3 * S_IEtest;
-S_EItest = [];
-S_EItest(1,:) = linspace(1.65,1.9 ,EITestN) *S_EE;
-S_EItest(2,:) = linspace(1.45,1.75,EITestN) *S_EE;    % 1.5 1.7
-S_EItest(3,:) = linspace(1.25,1.45,EITestN) *S_EE;    % 1.1 1.3
-
+%L6 input S_IEOneTime = 0.20*S_II;
+S_EL6 = 1/3*S_EE; % S_IL6 = 1/3*S_IEOneTime; Now S_IL6 is porp to S_IE
+rE_L6 = 0.25; % rI_L6 to be determined
 
 % First determine S_Elgn
 S_Elgntest = [1.5 2 2.5 3.0]*S_EE;
 S_Elgn = S_Elgntest(S_ElgnInd);
-
 % Panel: Two proportions
-PanelNum1 = 4; %4
-PanelNum2 = 5; %5
-S_Ilgn_Mtp = [1  2.5]; % of S_Elgn
-rI_L6_Mtp  = [1  5]; % of rE_L6
-S_Ilgntest = linspace(S_Ilgn_Mtp(1),S_Ilgn_Mtp(2),PanelNum1)*S_Elgn;
-rI_L6test = linspace(rI_L6_Mtp(1),rI_L6_Mtp(2),PanelNum2)*rE_L6;
-
-
+S_Ilgn_Mtp = [1.5 2 2.5 3]; % of S_Elgn
+rI_L6_Mtp  = [1.5 3 4.5 6]; % of rE_L6
+S_Ilgntest = S_Ilgn_Mtp * S_Elgn;
+rI_L6test  = rI_L6_Mtp * rE_L6;
 S_Ilgn = S_Ilgntest(S_IlgnInd);
 rI_L6 = rI_L6test(rI_L6Ind);
 
+% Find appropirate place for spot ckeck
+GridNum1 = 160; %160
+GridNum2 = 160; %160
+S_EI_Mtp = [0.9, 2.4]; % of S_EE
+S_IE_Mtp = [0.1, 0.25]; % of S_II
+S_EIBG = linspace(S_EI_Mtp(1),S_EI_Mtp(2),GridNum1)*S_EE;
+S_IEBG = linspace(S_IE_Mtp(1),S_IE_Mtp(2),GridNum2)*S_II;%*S_EE; I only specify a vecter length here
+
+[~,GA_SIEInd,~] = find(EtdGoodArea);
+SIE_LeftInd  = min(GA_SIEInd);
+SIE_RightInd = max(GA_SIEInd);
+S_IEtestInd = floor((SIE_LeftInd + SIE_RightInd)/2);
+S_IEtest = S_IEBG(S_IEtestInd);
+S_IL6test =  1/3 * S_IEtest;
+
+EITestN = 10;
+TestSEIColumn = EtdGoodArea(:,S_IEtestInd);
+GA_SIEInd = find(TestSEIColumn);
+SEI_Low  = S_EIBG(min(GA_SIEInd));
+SEI_High = S_EIBG(max(GA_SIEInd));
+S_EItest  = linspace(SEI_Low, SEI_High, EITestN);
 
 
 
 % E-to-E delay time
-T_EEDly = 1; N_EEDly = floor(T_EEDly/dt);
+T_EEDly = 1.0; N_EEDly = floor(T_EEDly/dt);
 
 %% MF Estimation, repeat
-cluster = gcp('nocreate');
-if isempty(cluster)
-    cluster = parpool([4 64]);
-    cluster.IdleTimeout = 1200;
-end
 
 Fr_NoFix_ref = zeros(2,EITestN,length(S_IEtest));
 mV_NoFix_ref = zeros(2,EITestN,length(S_IEtest));
@@ -141,7 +163,7 @@ for S_IEInd = 1:length(S_IEtest)
     S_IE = S_IEtest(S_IEInd);
     S_EItestNow = S_EItest(S_IEInd,:);
     S_IL6 = S_IL6test(S_IEInd);
-    parfor S_EIInd = 1:length(S_EItestNow)
+    for S_EIInd = EITestN:-1:1
         S_EI = S_EItestNow(S_EIInd);
         tic
         [Fr_NoFixTraj_ref{S_EIInd,S_IEInd},mV_NoFixTraj_ref{S_EIInd,S_IEInd},...
@@ -172,7 +194,7 @@ for S_IEInd = 1:length(S_IEtest)
 end
 
 %% Network Simulation
-T = 3000; SimulationT = 1000;
+T = 3010; SimulationT = 1500;
 % Setup Results Recording
 Fr_NW      = zeros(2,EITestN,length(S_IEtest));
 mV_NW      = zeros(2,EITestN,length(S_IEtest));
@@ -202,7 +224,7 @@ Wins(:,2) = TWinBounds(NSlide+1:end);
 
 InSs = load('Initials_L6.mat');
 % For each S Ind...
-parfor S_IEInd = 1:length(S_IEtest)
+for S_IEInd = 1:length(S_IEtest)
     RefTimeE = InSs.RefTimeE; VE = InSs.VE; SpE = InSs.SpE; GE_ampa_R = InSs.GE_ampa_R; GE_nmda_R = InSs.GE_nmda_R; GE_gaba_R = InSs.GE_gaba_R;
     GE_ampa_D = InSs.GE_ampa_D; GE_nmda_D = InSs.GE_nmda_D; GE_gaba_D = InSs.GE_gaba_D;
     RefTimeI = InSs.RefTimeI; VI = InSs.VI; SpI = InSs.SpI; GI_ampa_R = InSs.GI_ampa_R; GI_nmda_R = InSs.GI_nmda_R; GI_gaba_R = InSs.GI_gaba_R;
@@ -271,7 +293,7 @@ parfor S_IEInd = 1:length(S_IEtest)
                     ', S_IE = ' num2str(S_IE) ', S_II = ' num2str(S_II) '\n' ...
                     'S_Elgn = ' num2str(S_Elgn) ', lambda_E = ' num2str(lambda_E) ...
                     ', S_Ilgn = ' num2str(S_Ilgn) ', lambda_I = ' num2str(lambda_I) '\n' ...
-                    'S_amb = ' num2str(S_amb) ', rE_amb = ' num2str(rE_amb) ', rI_amb = ' num2str(rI_amb)];
+                    'S_amb = ' num2str(S_amb) ', rE_amb = ' num2str(rE_amb) ', rI_amb = ' num2str(rI_amb)  '\n'];
                 
                 fprintf(ParameterDisp)
 %                 h = figure('Name','TestRaster');
@@ -301,7 +323,7 @@ parfor S_IEInd = 1:length(S_IEtest)
                 I_SpInd = find(I_Sp(:,2)>=T_RateWindow(1) & I_Sp(:,2)<=T_RateWindow(2) & ismember(I_Sp(:,1),I_Ind));
                 E_Rate = length(E_SpInd)/(WinSize/1000)/length(E_Ind);
                 I_Rate = length(I_SpInd)/(WinSize/1000)/length(I_Ind);
-                
+                fprintf('FrE = %.2f, FrI = %.2f\n', E_Rate,I_Rate)
 %                 f_EnIOneStep = MeanFieldEst_BkGd_L6_OneStep(N_EE,N_EI,N_IE,N_II,...
 %                     S_EE,S_EI,S_IE,S_II,p_EEFail,...
 %                     lambda_E,S_Elgn,rE_amb,S_amb,...
@@ -346,7 +368,7 @@ parfor S_IEInd = 1:length(S_IEtest)
             VE_T = [VE_T;nanmean(oVE(E_Ind))];
             VI_T = [VI_T;nanmean(oVI(I_Ind))];
             
-            if sum(isnan(oVE))>0.80*N_E
+            if sum(isnan(oVE))>0.90*N_E
                 BlowUp = true;
                 disp('warning!: Network exploded')
                 break
@@ -373,6 +395,7 @@ end
 
 ContourData_7D = ws2struct();
 % add important info to the end of filename
-CommentString = sprintf('_S_EE=%.3f_S_II=%.2f_S_Elgn=%.3f_7D_HPC_S_IlgnInd%d_rI_L6Ind%d',S_EE,S_II,S_Elgn,S_IlgnInd,rI_L6Ind);
-save([pwd '/HPCData/ContourData_Valid' CommentString '.mat'],'ContourData_7D')
+CommentString = sprintf('_S_EE=%.3f_S_II=%.2f_S_ElgnInd=%d_S_IlgnInd%d_rI_L6Ind%d.mat',...
+                                        S_EE,     S_II,     S_ElgnInd,   S_IlgnInd,  rI_L6Ind);
+save([pwd '/HPCData/FigContourL_Valid' CommentString '.mat'],'ContourData_7D')
 end
