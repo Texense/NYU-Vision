@@ -14,7 +14,23 @@ CurrentFolder = pwd;
 addpath(CurrentFolder)
 addpath([CurrentFolder '/Utils'])
 addpath([CurrentFolder '/Data'])
+addpath([CurrentFolder '/HPCData'])
 
+%% See if data file exists. If true return.
+S_EEtest = [0.018 0.021 0.024 0.027 0.030]; 
+S_IItest = [0.08  0.12  0.16  0.20];
+S_EE = S_EEtest(S_EEInd);
+S_II = S_IItest(S_IIInd);
+
+CommentString = sprintf('_S_EE=%.3f_S_II=%.2f_S_ElgnInd=%d_S_IlgnInd%d_rI_L6Ind%d',S_EE,S_II,S_ElgnInd,S_IlgnInd,rI_L6Ind);
+SearchFile = [pwd '/HPCData/FigContourL' CommentString '.mat'];
+if isfile(SearchFile)
+    disp('Data File exists. Return Now')
+    return
+end
+
+%% If now, we start computation below...
+% Frst setup network
 N_HC = 3;
 % Number of E and I neurons
 n_E_HC = 54; n_I_HC = 31; % per side of HC
@@ -61,10 +77,10 @@ C_II = ConnectionMat(N_I,NnI,Size_I,...
 %zeros(N_I,1); GI_nmda_D = zeros(N_I,1); GI_gaba_D = zeros(N_I,1);
 %load('Initials.mat')
 %parameters
-S_EEtest = [0.018 0.021 0.024 0.027 0.030]; 
-S_IItest = [0.08  0.12  0.16  0.20];
-S_EE = S_EEtest(S_EEInd);
-S_II = S_IItest(S_IIInd);
+% S_EEtest = [0.018 0.021 0.024 0.027 0.030]; 
+% S_IItest = [0.08  0.12  0.16  0.20];
+% S_EE = S_EEtest(S_EEInd);
+% S_II = S_IItest(S_IIInd);
 p_EEFail = 0.2; S_amb = 0.01;
 
 tau_ampa_R = 0.5; tau_ampa_D = 3;
