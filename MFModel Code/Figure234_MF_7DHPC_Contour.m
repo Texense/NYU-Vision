@@ -29,6 +29,11 @@ if isfile(SearchFile)
     return
 end
 
+cluster = gcp('nocreate');
+if isempty(cluster)
+parpool("local",[4,48]);
+end
+
 %% If now, we start computation below...
 % Frst setup network
 N_HC = 3;
@@ -134,7 +139,7 @@ LineU1 = polyfit([0.1  0.3 ],[2.5 2.5  ],1); % LineU1 = polyfit([0.1  0.3 ],[2.5
 %     cluster = parpool([4 64]);
 % %    cluster.IdleTimeout = 1200;
 % end
-cluster = parpool([4 64]);
+
 %% MF estimation:
 %SBound = 3.3; % multipliers of S_EE
 Fr_NoFix = zeros(2,length(S_EItest),length(S_IEtest) );
