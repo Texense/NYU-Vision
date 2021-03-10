@@ -69,7 +69,7 @@ C_II = ConnectionMat(N_I,NnI,Size_I,...
 S_EEtest = [0.020 0.024 0.028]; 
 S_IItest = [0.06  0.09  0.12  0.15  0.18];
 S_EE = S_EEtest(S_EEInd);
-S_II = S_IItest(S_IIInd);
+S_II = S_IItest(S_IIInd);oefficient of variation
 p_EEFail = 0.2; S_amb = 0.01;
 
 tau_ampa_R = 0.5; tau_ampa_D = 3;
