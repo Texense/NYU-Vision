@@ -138,7 +138,7 @@ ConvIndi = logical(loopCount); % converged or not
 FailIndi = zeros(size(loopCount));
 
 SampleNum = 100;
-StopNum = 400;
+StopNum = 300;
 h = 1;
 SimuT = 40*1e3;
 aa = floor(length(S_IEtest)); % Matlab always fail to directly see this as a whole number!!!

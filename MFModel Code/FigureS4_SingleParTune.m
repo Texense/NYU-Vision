@@ -49,11 +49,11 @@ addpath([CurrentFolder '/Data'])
 % load saved network architecture to aviod doing it everytime
 load('NtWk_Archit.mat')
 % pars
-S_EEInd = 2;
-S_IIInd = 3;
-S_ElgnInd = 3;
-S_IlgnInd = 3;
-rI_L6Ind = 3;
+S_EEInd = 3;
+S_IIInd = 2;
+S_ElgnInd = 2;
+S_IlgnInd = 2;
+rI_L6Ind = 2;
 
 %Fixed parameters
 p_EEFail = 0.2; 
@@ -68,8 +68,8 @@ gL_I = 1/15;  Vi = -2/3; %S_Ilgn = 0.084;
 rhoI_ampa = 0.67;rhoI_nmda = 0.33;
 
 %% Tweeking Pars
-S_EEtest = [0.020 0.024 0.028]; 
-S_IItest = [0.06  0.09  0.12  0.15  0.18];
+S_EEtest = [0.018 0.021 0.024 0.027 0.030]; 
+S_IItest = [0.08  0.12  0.16  0.20];
 S_EE = S_EEtest(S_EEInd);
 S_II = S_IItest(S_IIInd);
 
@@ -83,8 +83,8 @@ S_EL6 = 1/3*S_EE; % S_IL6 = 1/3*S_IEOneTime; Now S_IL6 is porp to S_IE
 rE_L6 = 0.25; % rI_L6 to be determined
 
 % Unlike MF Contours, we select a specific SEI and SIE:
-S_EI = 1.6*S_EE;
-S_IE= 0.145*S_II;%*S_EE; I only specify a vecter length here
+S_EI = 1.51*S_EE;
+S_IE= 0.147*S_II;%*S_EE; I only specify a vecter length here
 
 S_IL6 = 1/3 * S_IE;
 % First determine S_Elgn
@@ -92,13 +92,10 @@ S_Elgntest = [1.5 2 2.5 3.0]*S_EE;
 S_Elgn = S_Elgntest(S_ElgnInd);
 
 % Panel: Two proportions
-PanelNum1 = 4; %4
-PanelNum2 = 5; %5
-S_Ilgn_Mtp = [1  2.5]; % of S_Elgn
-rI_L6_Mtp  = [1  5]; % of rE_L6
-S_Ilgntest = linspace(S_Ilgn_Mtp(1),S_Ilgn_Mtp(2),PanelNum1)*S_Elgn;
-rI_L6test  = linspace(rI_L6_Mtp(1),rI_L6_Mtp(2),  PanelNum2)*rE_L6;
-rI_L6test = [rI_L6test, 4.5*rE_L6];
+S_Ilgn_Mtp = [1.5 2 2.5 3]; % of S_Elgn
+rI_L6_Mtp  = [1.5 3 4.5 6]; % of rE_L6
+S_Ilgntest = S_Ilgn_Mtp * S_Elgn;
+rI_L6test  = rI_L6_Mtp * rE_L6;
 
 S_Ilgn = S_Ilgntest(S_IlgnInd);
 rI_L6 = rI_L6test(rI_L6Ind);
