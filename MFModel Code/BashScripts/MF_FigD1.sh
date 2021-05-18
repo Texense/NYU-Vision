@@ -1,8 +1,8 @@
-for SELGN in 3; do
+for SELGN in 2; do
 for SILGN in 2; do
-for rIL6  in 3; do
+for rIL6  in 2; do
 for SEE in 3; do
-for SII in $(seq 1 4); do
+for SII in $(seq 2 3); do
 #
 echo "${SELGN}, ${SILGN}, ${rIL6}, ${SEE}, ${SII}"
 export SELGN SILGN rIL6 SEE SII
