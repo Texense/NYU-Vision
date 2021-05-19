@@ -14,11 +14,11 @@ addpath([CurrentFolder '/HPCData'])
 
 %% See if data file exists. If true return.
 S_EEtest = [0.018 0.021 0.024 0.027 0.030]; 
-S_IItest = [0.08  0.12  0.16  0.20];
+S_IItest = linspace(0.08,0.20,21);%S_IItest = [0.08  0.12  0.16  0.20];
 S_EE = S_EEtest(S_EEInd);
 S_II = S_IItest(S_IIInd);
 
-CommentString = sprintf('_S_EE=%.3f_S_II=%.2f_S_ElgnInd=%d_S_IlgnInd%d_rI_L6Ind%d',S_EE,S_II,S_ElgnInd,S_IlgnInd,rI_L6Ind);
+CommentString = sprintf('_S_EE=%.3f_S_II=%.3f_S_ElgnInd=%d_S_IlgnInd%d_rI_L6Ind%d',S_EE,S_II,S_ElgnInd,S_IlgnInd,rI_L6Ind);
 SearchFile = [pwd '/HPCData/FigContourUnInd' CommentString '.mat'];
 if isfile(SearchFile)
     disp('Data File exists. Return Now')
@@ -104,7 +104,7 @@ rE_L6 = 0.25; % rI_L6 to be determined
 
 % Replace S_EI by testing values
 GridNum1 = 160; %160
-GridNum2 = 160; %160
+GridNum2 = 160; %160the axes are SIE and SEI, other parameters are indexed
 S_EI_Mtp = [0.9, 2.4]; % of S_EE
 S_IE_Mtp = [0.1, 0.25]; % of S_II
 S_EItest = linspace(S_EI_Mtp(1),S_EI_Mtp(2),GridNum1)*S_EE;
@@ -164,7 +164,7 @@ tic
 
 % S_IlgnInd = ceil(PanelInd/S_IIInd);
 % rI_L6Ind  = mod(PanelInd,S_IIInd);
-% rI_L6Ind(rI_L6Ind==0) = S_IIInd;
+% rI_L6Ind(rI_L6Ind==0) = S_IIInd;2
 
 parfor S_EIInd = 1:length(S_EItest)
     S_EI = S_EItest(S_EIInd);
@@ -238,7 +238,7 @@ toc
 %Trajs = struct('Fr_NoFixTraj', Fr_NoFixTraj, 'mV_NoFixTraj',mV_NoFixTraj);
 ContourData_7D = ws2struct();
 % add important info to the end of filename
-CommentString = sprintf('_S_EE=%.3f_S_II=%.2f_S_ElgnInd=%d_S_IlgnInd%d_rI_L6Ind%d',S_EE,S_II,S_ElgnInd,S_IlgnInd,rI_L6Ind);
+CommentString = sprintf('_S_EE=%.3f_S_II=%.3f_S_ElgnInd=%d_S_IlgnInd%d_rI_L6Ind%d',S_EE,S_II,S_ElgnInd,S_IlgnInd,rI_L6Ind);
 save([pwd '/HPCData/FigContourUnInd' CommentString '.mat'],'ContourData_7D')
 %% Contour maps
 % Fr_Plot = Fr_NoFix; S_IEBound = 8e-3; % DeleteInd =
