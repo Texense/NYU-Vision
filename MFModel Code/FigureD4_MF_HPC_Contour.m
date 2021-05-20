@@ -145,21 +145,18 @@ parfor RanInd1 = 1:GridNum
             gL_E,gL_I,Ve,Vi,...
             N_HC,n_E_HC,n_I_HC,'End',SampleNum,StopNum,h,SimuT);
         
+        Fr_NoFix(:,RanInd1,RanInd2 ) = mean(Fr_NoFixTraj{RanInd1,RanInd2 }(:,end-SampleNum+1:end),2);
+        mV_NoFix(:,RanInd1,RanInd2 ) = mean(mV_NoFixTraj{RanInd1,RanInd2 }(:,end-SampleNum:end),2);
+        Fr_NoFixVar(:,RanInd1,RanInd2 ) = var(Fr_NoFixTraj{RanInd1,RanInd2 }(:,end-SampleNum:end),0,2);
+        mV_NoFixVar(:,RanInd1,RanInd2 ) = var(mV_NoFixTraj{RanInd1,RanInd2 }(:,end-SampleNum:end),0,2);
+
+        
         toc
     end
 end
 toc
 
 %% Get the Mean of the EarlyTerminate Loops
-for RanInd1 = 1:GridNum
-    for RanInd2 = 1:length(S_IEtest)
-
-        Fr_NoFix(:,RanInd1,RanInd2 ) = mean(Fr_NoFixTraj{RanInd1,RanInd2 }(:,end-SampleNum+1:end),2);
-        mV_NoFix(:,RanInd1,RanInd2 ) = mean(mV_NoFixTraj{RanInd1,RanInd2 }(:,end-SampleNum:end),2);
-        Fr_NoFixVar(:,RanInd1,RanInd2 ) = var(Fr_NoFixTraj{RanInd1,RanInd2 }(:,end-SampleNum:end),0,2);
-        mV_NoFixVar(:,RanInd1,RanInd2 ) = var(mV_NoFixTraj{RanInd1,RanInd2 }(:,end-SampleNum:end),0,2);
-    end
-end
 
 % save data
 ContourData_7D = ws2struct();

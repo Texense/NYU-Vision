@@ -1,8 +1,8 @@
 ##We are doing different axes... 
 ##declare -A arr1=([1]=1 [2]=3 [3]=5 [4]=1 [5]=3 [6]=6)
 ##declare -A arr2=([1]=2 [2]=4 [3]=6 [4]=5 [5]=6 [6]=7) 
-declare -A arr1=([1]=1 [2]=3)
-declare -A arr2=([1]=5 [2]=6) 
+declare -A arr1=([1]=1 [2]=1)
+declare -A arr2=([1]=2 [2]=5) 
 
 for SeqInd in $(seq 1 2); do 
 ParInd1=${arr1[${SeqInd}]}
