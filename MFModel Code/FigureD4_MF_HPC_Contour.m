@@ -50,7 +50,7 @@ C_EE = ConnectionMat(N_E,NnE,Size_E,...currentVec(2)^2
 C_EI = ConnectionMat(N_E,NnE,Size_E,...
     N_I,NnI,Size_I,...
     Peak_I,SD_I,Dist_LB,0);
-
+% of rE_L6
 C_IE = ConnectionMat(N_I,NnI,Size_I,...
     N_E,NnE,Size_E,...
     Peak_I,SD_E,Dist_LB,0);
@@ -71,7 +71,7 @@ tau_ref = 2; % time unit is ms
 gL_E = 1/20;  Ve = 14/3;  rhoE_ampa = 0.8; rhoE_nmda = 0.2; %S_Elgn = 2*S_EE;
 gL_I = 1/15;  Vi = -2/3;  rhoI_ampa = 0.67;rhoI_nmda = 0.33;%S_Ilgn = 0.084;
 
-
+% of rE_L6
 lambda_E = 0.08; % ~16 LGN spike can excite a E neurons. 0.25 spike/ms makes 64 ms for such period.
 lambda_I = 0.08;
 %rE_amb = 0.72; rI_amb = 0.36;
@@ -81,23 +81,22 @@ rE_L6 = 0.25; % rI_L6 to be determined
 % Free pars: Fix or Range:in order of SEE SEI SIE SII
 %                                     SELGN SILGN FIL6 1-7
 GridNum = 160; %160
-FreeParFix = {0.024, 0.0362, 0.0176, 0.120,...
-              0.048, 0.096, 0.75};
-SEERan = [0.018,0.030];
-SIIRan = [0.08, 0.20];
-S_EI_Mtp = [0.9, 2.4];  % of S_EE
-S_IE_Mtp = [0.1, 0.25]; % of S_II 
-S_Elgn_Mtp = [1.5 3.0]; % of S_EE
-S_Ilgn_Mtp = [1.5 3];   % of S_Elgn
-rI_L6_Mtp  = [1.5 3 4.5 6]; % of rE_L6
-FreeParRan = {linspace(SEERan(1),              SEERan(2),               GridNum), ...% SEE
-              linspace(SEERan(1)*S_EI_Mtp(1),  SEERan(2)*S_EI_Mtp(2),   GridNum), ...% SEI
-              linspace(SIIRan(1)*S_IE_Mtp(1),  SIIRan(2)*S_IE_Mtp(2),   GridNum), ...% SIE
-              linspace(SIIRan(1),              SIIRan(2),               GridNum), ...% SII
-              linspace(SEERan(1)*S_Elgn_Mtp(1),SEERan(2)*S_Elgn_Mtp(2), GridNum), ...% SElgn
-              linspace(SEERan(1)*S_Elgn_Mtp(1)*S_Ilgn_Mtp(1),...
-                                               SEERan(2)*S_Elgn_Mtp(2)*S_Ilgn_Mtp(2), GridNum), ...% SElgn
-              linspace(SEERan(1)*rI_L6_Mtp(1), SEERan(2)*rI_L6_Mtp(2),  GridNum)} ;  %FIL6 
+FreeParFix = {0.024, 0.024*1.51, 0.120*0.147, 0.120,...2.4
+              0.048, 0.096,      0.75};
+SEERan = [0.94, 1.06];
+SEIRan = [0.94, 1.06];  
+SIERan = [0.94, 1.06]; 
+SIIRan = [0.94, 1.06];
+SElgnRan = [0.8 1.2]; 
+SIlgnRan = [0.5 1.5];  
+rIL6Ran  = [0.4 1.6]; 
+FreeParRan = {linspace(FreeParFix{1}*SEERan(1),  FreeParFix{1}*SEERan(2),  GridNum), ...% SEE
+              linspace(FreeParFix{2}*SEIRan(1),  FreeParFix{2}*SEIRan(2),  GridNum), ...% SEI
+              linspace(FreeParFix{3}*SIERan(1),  FreeParFix{3}*SIERan(2),  GridNum), ...% SIE
+              linspace(FreeParFix{4}*SIIRan(1),  FreeParFix{4}*SIIRan(2),  GridNum), ...% SII
+              linspace(FreeParFix{5}*SElgnRan(1),FreeParFix{5}*SElgnRan(2),GridNum), ...% SElgn
+              linspace(FreeParFix{6}*SIlgnRan(1),FreeParFix{6}*SIlgnRan(2),GridNum), ...% SElgn
+              linspace(FreeParFix{7}*rIL6Ran(1), FreeParFix{6}*rIL6Ran(2), GridNum)} ;  %FIL6 
 FreeParUse = FreeParFix; 
 FreeParUse([ParInd1, ParInd2]) = FreeParRan([ParInd1, ParInd2]);
 % SQL6 Put later?
@@ -118,9 +117,9 @@ ConvIndi = logical(loopCount); % converged or not
 FailIndi = zeros(size(loopCount));
 
 SampleNum = 50;
-StopNum = 300;
+StopNum = 500;
 h = 1;
-SimuT = 20*1e3;
+SimuT = 30*1e3;
 
 
 tic
@@ -164,7 +163,7 @@ ContourData_7D = ws2struct();
 ParName = {'S_EE','S_EI','S_IE','S_II',...
            'S_Elgn', 'S_Ilgn', 'rI_L6'};
 CommentString = sprintf('_%s%s',ParName{ParInd1}, ParName{ParInd2});
-save([pwd '/HPCData/FigD4' CommentString '.mat'],'ContourData_7D')
+save([pwd '/HPCData/FigD4N' CommentString '.mat'],'ContourData_7D')
 end
 
 % A function assining free parameters
