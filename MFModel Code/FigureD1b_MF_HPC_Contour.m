@@ -5,7 +5,7 @@
 % There are 7 pars: SEE SEI SIE SII
 %                   SELGN SILGN FIL6 1-7
 % ParInd1,2: Choose 2 from 7, others stay ref point
-function [] = FigureD4_MF_HPC_Contour(ParInd1, ParInd2)
+function [] = FigureD1b_MF_HPC_Contour(SEIInd)
 %% A Rough Estimation Contour for S_EI and S_IE
 % first, setup connctivity map
 CurrentFolder = pwd;
@@ -81,24 +81,26 @@ rE_L6 = 0.25; % rI_L6 to be determined
 % Free pars: Fix or Range:in order of SEE SEI SIE SII
 %                                     SELGN SILGN FIL6 1-7
 GridNum = 160; %160
+SEINum = 21;
 FreeParFix = {0.024, 0.024*1.51, 0.120*0.147, 0.120,...2.4
               0.048, 0.096,      0.75};
-SEERan = [0.94, 1.06];
-SEIRan = [0.94, 1.06];  
+SEERan = [0.02,     0.028];
+SEIRan = [0.02*1.2, 0.028*1.5];  
 SIERan = [0.94, 1.06]; 
 SIIRan = [0.94, 1.06];
-SElgnRan = [0.8 1.2]; 
+SElgnRan = [0.02*1.5 0.028*3]; 
 SIlgnRan = [0.5 1.5];  
 rIL6Ran  = [0.4 1.6]; 
-FreeParRan = {linspace(FreeParFix{1}*SEERan(1),  FreeParFix{1}*SEERan(2),  GridNum), ...% SEE
-              linspace(FreeParFix{2}*SEIRan(1),  FreeParFix{2}*SEIRan(2),  GridNum), ...% SEI
+FreeParRan = {linspace(              SEERan(1),                SEERan(2),  GridNum), ...% SEE
+              linspace(              SEIRan(1),                SEIRan(2),  SEINum), ...% SEI
               linspace(FreeParFix{3}*SIERan(1),  FreeParFix{3}*SIERan(2),  GridNum), ...% SIE
               linspace(FreeParFix{4}*SIIRan(1),  FreeParFix{4}*SIIRan(2),  GridNum), ...% SII
-              linspace(FreeParFix{5}*SElgnRan(1),FreeParFix{5}*SElgnRan(2),GridNum), ...% SElgn
+              linspace(              SElgnRan(1),              SElgnRan(2),GridNum), ...% SElgn
               linspace(FreeParFix{6}*SIlgnRan(1),FreeParFix{6}*SIlgnRan(2),GridNum), ...% SElgn
               linspace(FreeParFix{7}*rIL6Ran(1), FreeParFix{7}*rIL6Ran(2), GridNum)} ;  %FIL6 
 FreeParUse = FreeParFix; 
-FreeParUse([ParInd1, ParInd2]) = FreeParRan([ParInd1, ParInd2]);
+FreeParUse([1 2 5]) = FreeParRan([1 2 5]);
+FreeParUse{2} = FreeParRan{2}(SEIInd);
 % SQL6 Put later?
 % S_EL6 = 1/3*S_EE;
 % S_IL6test = 1/3 * S_IEtest;
@@ -128,7 +130,7 @@ parfor RanInd1 = 1:GridNum
         % Use a new function to read the Pars.....
         [S_EE,S_EI,S_IE,S_II,...
          S_Elgn, S_Ilgn, rI_L6,...
-         S_EL6,S_IL6] = AssignParVals(FreeParUse, ParInd1, ParInd2, RanInd1, RanInd2)
+         S_EL6,S_IL6] = AssignParVals(FreeParUse, 1, 5, RanInd1, RanInd2)
         
         tic
         [Fr_NoFixTraj{RanInd1,RanInd2 },mV_NoFixTraj{RanInd1,RanInd2 },...
@@ -160,10 +162,8 @@ toc
 % save data
 ContourData_7D = ws2struct();
 % add important info to the end of filename
-ParName = {'S_EE','S_EI','S_IE','S_II',...
-           'S_Elgn', 'S_Ilgn', 'rI_L6'};
-CommentString = sprintf('_%s%s',ParName{ParInd1}, ParName{ParInd2});
-save([pwd '/HPCData/FigD4N' CommentString '.mat'],'ContourData_7D')
+CommentString = sprintf('_SEIInd%.3f',SEIInd);
+save([pwd '/HPCData/FigD1b' CommentString '.mat'],'ContourData_7D')
 end
 
 % A function assining free parameters
