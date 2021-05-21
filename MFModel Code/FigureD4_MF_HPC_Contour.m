@@ -83,10 +83,10 @@ rE_L6 = 0.25; % rI_L6 to be determined
 GridNum = 160; %160
 FreeParFix = {0.024, 0.024*1.51, 0.120*0.147, 0.120,...2.4
               0.048, 0.096,      0.75};
-SEERan = [0.94, 1.06];
-SEIRan = [0.94, 1.06];  
-SIERan = [0.94, 1.06]; 
-SIIRan = [0.94, 1.06];
+SEERan = [0.88, 1.12];
+SEIRan = [0.88, 1.12];  
+SIERan = [0.88, 1.12]; 
+SIIRan = [0.88, 1.12];
 SElgnRan = [0.8 1.2]; 
 SIlgnRan = [0.5 1.5];  
 rIL6Ran  = [0.4 1.6]; 
