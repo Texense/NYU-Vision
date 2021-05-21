@@ -81,7 +81,7 @@ rE_L6 = 0.25; % rI_L6 to be determined
 % Free pars: Fix or Range:in order of SEE SEI SIE SII
 %                                     SELGN SILGN FIL6 1-7
 GridNum = 160; %160
-FreeParFix = {0.024, 0.024*1.51, 0.120*0.147, 0.120,...2.4
+FreeParFix = {0.024, 0.024*31.51, 0.120*0.147, 0.120,...2.4
               0.048, 0.096,      0.75};
 SEERan = [0.94, 1.06];
 SEIRan = [0.94, 1.06];  
@@ -96,7 +96,7 @@ FreeParRan = {linspace(FreeParFix{1}*SEERan(1),  FreeParFix{1}*SEERan(2),  GridN
               linspace(FreeParFix{4}*SIIRan(1),  FreeParFix{4}*SIIRan(2),  GridNum), ...% SII
               linspace(FreeParFix{5}*SElgnRan(1),FreeParFix{5}*SElgnRan(2),GridNum), ...% SElgn
               linspace(FreeParFix{6}*SIlgnRan(1),FreeParFix{6}*SIlgnRan(2),GridNum), ...% SElgn
-              linspace(FreeParFix{7}*rIL6Ran(1), FreeParFix{6}*rIL6Ran(2), GridNum)} ;  %FIL6 
+              linspace(FreeParFix{7}*rIL6Ran(1), FreeParFix{7}*rIL6Ran(2), GridNum)} ;  %FIL6 
 FreeParUse = FreeParFix; 
 FreeParUse([ParInd1, ParInd2]) = FreeParRan([ParInd1, ParInd2]);
 % SQL6 Put later?
@@ -119,7 +119,7 @@ FailIndi = zeros(size(loopCount));
 SampleNum = 50;
 StopNum = 500;
 h = 1;
-SimuT = 30*1e3;
+SimuT = 20*1e3;
 
 
 tic
@@ -184,5 +184,5 @@ S_EE = FreeParNow(1); S_EI = FreeParNow(2);
 S_IE = FreeParNow(3); S_II = FreeParNow(4);
 S_Elgn= FreeParNow(5); S_Ilgn= FreeParNow(6); 
 rI_L6 = FreeParNow(7);
-S_EL6 = S_EE/3; S_IL6 = S_EI/3;
+S_EL6 = S_EE/3; S_IL6 = S_IE/3;
 end
