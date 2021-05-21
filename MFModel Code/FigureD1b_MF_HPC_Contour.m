@@ -162,7 +162,7 @@ toc
 % save data
 ContourData_7D = ws2struct();
 % add important info to the end of filename
-CommentString = sprintf('_SEIInd%.3f',SEIInd);
+CommentString = sprintf('_SEIInd%d',SEIInd);
 save([pwd '/HPCData/FigD1b' CommentString '.mat'],'ContourData_7D')
 end
 
